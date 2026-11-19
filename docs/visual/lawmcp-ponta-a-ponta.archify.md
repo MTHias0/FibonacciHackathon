@@ -4,21 +4,21 @@ O LawMCP é um **servidor MCP via stdio** com 15.162 documentos de lei num índi
 
 - O Claude Desktop, o Claude Code e o Cursor iniciam `node src/server.ts` e trocam JSON-RPC pelo stdin e stdout.[](source:server-main)
 - A ponte `web/servidor.ts` inicia o mesmo processo com o `StdioClientTransport` do SDK e expõe três rotas HTTP.[](source:web-cliente)
-- Cada mensagem do chat vira uma chamada de tool por regras; o Ollama local só reescreve buscas em linguagem leiga.[](source:web-chat)
+- Cada mensagem do chat vira uma chamada de tool por regras; o Claude da conta logada no Claude Code (`claude -p`) só reescreve buscas em linguagem leiga.[](source:web-chat)
 - As duas tools que gravam em disco ficam bloqueadas na web.
 
-@answer scope="main, commit 1628937 · MCP v0.2 · tudo local: stdio e 127.0.0.1"
+@answer scope="main, commit 538d38d · MCP v0.2 · MCP e ponte locais (stdio e 127.0.0.1), tradução pelo Claude"
 @meta locale=en style=product
 @source server-tools title="server.ts: criarServidor e as tools" path=src/server.ts lines=63:86
 @source server-main title="server.ts: partida do servidor stdio" path=src/server.ts lines=289:298
 @source indice-carregar title="indice.ts: Indice.carregar" path=src/dados/indice.ts lines=128:150
-@source web-cliente title="servidor.ts: cliente MCP via stdio" path=web/servidor.ts lines=26:41
-@source web-chat title="servidor.ts: chat(), tradução e encadeamento" path=web/servidor.ts lines=43:58
-@source web-rotas title="servidor.ts: rotas HTTP" path=web/servidor.ts lines=85:113
-@source roteador title="roteador.ts: rotear()" path=web/roteador.ts lines=46:66
-@source tradutor title="tradutor.ts: traduzir() com Ollama" path=web/tradutor.ts lines=40:63
+@source web-cliente title="servidor.ts: cliente MCP via stdio" path=web/servidor.ts lines=26:40
+@source web-chat title="servidor.ts: chat(), tradução e encadeamento" path=web/servidor.ts lines=42:58
+@source web-rotas title="servidor.ts: rotas HTTP" path=web/servidor.ts lines=85:114
+@source roteador title="roteador.ts: rotear()" path=web/roteador.ts lines=65:85
+@source tradutor title="tradutor.ts: traduzir() com o claude -p" path=web/tradutor.ts lines=47:66
 @source app-api title="app.js: api() no navegador" path=web/public/app.js lines=48:53
-@source app-enviar title="app.js: enviar() do chat" path=web/public/app.js lines=304:330
+@source app-enviar title="app.js: enviar() do chat" path=web/public/app.js lines=304:331
 
 ## Quais peças existem e quem chama quem? {#pecas}
 
@@ -26,14 +26,14 @@ O LawMCP é um **servidor MCP via stdio** com 15.162 documentos de lei num índi
 | browser | Navegador (app.js) | frontend | source:app-enviar |
 | desktop | Claude Desktop | external |
 | ponte | Ponte HTTP | backend | source:web-rotas |
-| ollama | Ollama local | external | source:tradutor |
+| claude | Claude (sua conta) | external | source:tradutor |
 | server | LawMCP server.ts | backend | source:server-tools |
 | citacoes | Verificador | backend |
 | indice | Índice BM25 | database | source:indice-carregar |
 | snapshot | data/snapshot | database |
 | local | data/local (git) | database |
 | browser > ponte | fetch | emphasis |
-| ponte > ollama | traduzir | dashed |
+| ponte > claude | traduzir | dashed |
 | ponte > server | stdio | emphasis |
 | desktop > server | stdio |
 | server > citacoes | verificar |
@@ -46,7 +46,7 @@ O LawMCP é um **servidor MCP via stdio** com 15.162 documentos de lei num índi
 | s-desktop | Claude Desktop | Um cliente MCP comum. Inicia o servidor pelo comando do arquivo de configuração. | mapa-lawmcp | desktop |
 | s-browser | Navegador (app.js) | Página estática. Só chama `/api/estado`, `/api/chat` e `/api/tool`. | mapa-lawmcp | browser |
 | s-ponte | Ponte HTTP | Servidor `node:http` na porta 5173 e cliente MCP: inicia `src/server.ts` como processo filho. O roteador por regras escolhe a tool, sem LLM. | mapa-lawmcp | ponte |
-| s-ollama | Ollama local | Opcional. Troca palavras do dia a dia pelo vocabulário da lei antes da busca. | mapa-lawmcp | ollama |
+| s-claude | Claude (sua conta) | Opcional. `claude -p` com o login do Claude Code, sem tools nem MCP. Troca palavras do dia a dia pelo vocabulário da lei antes da busca. | mapa-lawmcp | claude |
 | s-server | LawMCP server.ts | `McpServer` com 9 tools, 2 resources e 4 prompts. Valida as entradas com zod. | mapa-lawmcp | server |
 | s-indice | Índice BM25 | Os adaptadores convertem cada fonte em `Norma` na partida. Responde busca, leitura, genealogia e impacto. | mapa-lawmcp | indice |
 | s-local | data/local (git) | Normas privadas em `law://local/…`, cada gravação num commit próprio. Bloqueadas na web. | mapa-lawmcp | local |
@@ -96,18 +96,17 @@ Exemplo medido nesta máquina: “qual lei fala sobre bater carro”, modo `auto
 @sequence id=chamada-chat title="Uma pergunta no chat, ponta a ponta"
 | actor navegador | Navegador | frontend |
 | actor ponte | Ponte HTTP | backend |
-| actor ollama | Ollama local | external |
+| actor claude | Claude (sua conta) | external |
 | actor lawmcp | LawMCP server.ts | backend |
 | actor indice | Índice BM25 | database |
 | phase | Partida da ponte, uma vez |
 | ponte | lawmcp | spawn + initialize via stdio | emphasis |
 | ponte | lawmcp | tools/list |
 | lawmcp | ponte | 9 tools | return |
-| ponte | ollama | aquecer o modelo | dashed |
 | phase | Uma pergunta |
 | navegador | ponte | POST /api/chat | emphasis |
-| ponte | ollama | POST /api/chat do Ollama |
-| ollama | ponte | acidente de trânsito | return |
+| ponte | claude | claude -p, pergunta no stdin |
+| claude | ponte | acidente de trânsito reparar o dano | return |
 | ponte | lawmcp | tools/call buscar_normas | emphasis |
 | lawmcp | indice | buscar() |
 | indice | lawmcp | resultados + permalink | return |
@@ -117,15 +116,15 @@ Exemplo medido nesta máquina: “qual lei fala sobre bater carro”, modo `auto
 @steps id=chamada-passos
 | c-navegador | Navegador | `enviar()` manda texto, modo e jurisdição para `/api/chat` e mostra os passos que voltam. | chamada-chat | navegador |
 | c-ponte | Ponte HTTP | Valida o corpo, roda `rotear()` e, se o plano for `buscar_normas`, pede a tradução antes. | chamada-chat | ponte |
-| c-ollama | Ollama local | `qwen2.5:7b` devolve `{"consulta": "acidente de trânsito"}`. Um número que a pergunta não trouxe invalida a tradução. | chamada-chat | ollama |
+| c-claude | Claude (sua conta) | `claude-haiku-5-5` devolve `{"consulta": "acidente de trânsito reparar o dano"}`. Um número que a pergunta não trouxe invalida a tradução. | chamada-chat | claude |
 | c-lawmcp | LawMCP server.ts | Recebe `tools/call` igual a qualquer cliente MCP e responde JSON com o aviso legal. | chamada-chat | lawmcp |
-| c-indice | Índice BM25 | Achou o Código Penal Militar (art. 280 e 281) e o CTB (art. 326-B). | chamada-chat | indice |
+| c-indice | Índice BM25 | Achou o Código Penal Militar (art. 281), o Código Brasileiro de Aeronáutica e o CTB. | chamada-chat | indice |
 
 | Medida nesta máquina | Tempo |
 | --- | --- |
-| Tradução com o modelo já aquecido | Cerca de 1 s (1.012 ms) |
-| `buscar_normas` com tradução | 139 ms |
-| Tradução com o modelo frio | Estourou o limite de 20 s {caution:Volta às regras} |
+| Tradução com o Claude (haiku) | 4 a 6 s; um pico de 17,7 s em 7 medidas |
+| `buscar_normas` com tradução | 0,2 a 1 s |
+| Claude sem login, com erro ou acima de 30 s | Sem tradução {caution:Volta às regras} |
 | Busca sem tradução, “bater carro” | 0 resultados {bad:Sem tradução} |
 
 ## Como a ponte decide qual tool chamar? {#roteamento}
@@ -134,7 +133,7 @@ Exemplo medido nesta máquina: “qual lei fala sobre bater carro”, modo `auto
 | msg | Mensagem chega | frontend |
 | plano | rotear() | backend |
 | ebusca | É busca? | backend |
-| traduz | Ollama traduz | external |
+| traduz | Claude traduz | external |
 | achou | Achou resultados? | backend |
 | tool | Tool do plano | backend |
 | cadeia | Tem citação válida? | backend |
@@ -171,7 +170,7 @@ O filtro de jurisdição da tela vence o que o texto sugere: “birigui” no te
 | Rota | Corpo | O que faz |
 | --- | --- | --- |
 | `GET /api/estado` | nenhum | Lista as tools com `liberada`, as jurisdições e o modelo do tradutor |
-| `POST /api/chat` | `texto`, `modo`, `jurisdicao` | Roteia, traduz se for busca, chama e encadeia tools |
+| `POST /api/chat` | `texto`, `modo`, `jurisdicao`, `anteriores` | Roteia, traduz se for busca, chama e encadeia tools |
 | `POST /api/tool` | `nome`, `args` | Chama uma tool liberada diretamente |
 | `GET /*` | nenhum | Arquivos de `web/public/` |
 
@@ -204,12 +203,13 @@ curl -s -X POST localhost:5173/api/tool \
 
 @callout level=warning title="Antes de publicar fora da máquina local"
 A ponte não tem autenticação nem limite de taxa. Ela só é segura enquanto escuta em `127.0.0.1`.
+A tradução usa a assinatura de quem está logado no Claude Code. Para atender outras pessoas, use uma chave de API.
 O roteador entende palavras-chave, não perguntas livres. A troca por um modelo com tool use ainda depende de aprovação do time.
 
 ## Como rodar e conferir {#checklist}
 
 - [ ] Rode `npm run web` e espere a linha “cliente MCP com 9 tools” no terminal.
 - [ ] Abra `http://localhost:5173` e confira “MCP conectado · 15162 docs”.
-- [ ] Se o Ollama estiver ativo, confira “IA local” no estado; sem ele, a busca usa só as regras.
+- [ ] Com o Claude Code logado (`claude auth status`), confira “IA: Claude haiku (sua conta)” no estado; sem login, a busca usa só as regras.
 - [ ] Pergunte “art. 49 do CDC” e confira os passos `verificar_citacoes` e `ler_norma` nos bastidores.
 - [ ] Chame `adicionar_norma` por `/api/tool` e confira o erro “bloqueada na web”.

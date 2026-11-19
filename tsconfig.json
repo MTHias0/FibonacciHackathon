@@ -15,7 +15,9 @@
     "erasableSyntaxOnly": true,
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "include": [
     "src/**/*.ts"

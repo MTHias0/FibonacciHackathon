@@ -12,6 +12,10 @@ Leia `CONTEXTO.md` antes de trabalhar. `CLAUDE.md` é um link para este arquivo,
 ## Arquitetura
 
 - TypeScript estrito, Node.js 24 ou superior, ESM. Código em `src/`, build em `dist/`, dependências fixadas por `package-lock.json`.
+- O Node roda `.ts` direto: imports relativos usam a extensão `.ts` (o `tsc` reescreve para `.js` no build).
+- MCP: `@modelcontextprotocol/sdk` e `zod` para os schemas. Tools em `src/server.ts`. No servidor stdio, **nunca escreva no stdout**: logs só com `console.error`.
+- Dados: cada fonte é um `Adaptador` em `src/dados/adaptadores.ts`, registrado em `FONTES`, que converte para `Norma`. O snapshot da demo fica em `data/snapshot/` e `data/cache/` não é versionado.
+- Testes: `node:test` em `src/**/*.test.ts`. Toda tool nova precisa de um teste.
 - Registre aqui as novas regras permanentes de arquitetura e, em `CONTEXTO.md`, o motivo de cada uma.
 - Implemente o menor sistema completo que cumpra os requisitos confirmados. Reutilize antes de abstrair.
 - Preserve validação, segurança e integridade dos dados. Nunca registre segredos no repositório.

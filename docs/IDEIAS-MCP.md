@@ -15,6 +15,8 @@
 2. **Entrega 2, extras do MCP:** tools **P1** (`adicionar_norma`, `historico_norma`), resources, prompts e testes em outros clientes (Cursor, OpenBot).
 3. **Entrega 3, o resto:** página mínima, chat ou painel básico, pitch e polimento.
 
+> **Status em 2026-11-19:** a entrega 1 está implementada e verificada por testes (incluindo um ponta a ponta via stdio). Falta o checkpoint no Claude Desktop. Como rodar: [README](../README.md).
+
 ## 2. Decidido
 
 | Tema | Decisão |

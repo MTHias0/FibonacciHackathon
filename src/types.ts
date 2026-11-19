@@ -27,6 +27,8 @@ export interface Norma {
   /** Texto em Markdown. */
   texto: string;
   origem: Origem;
+  /** Nomes pelos quais a norma é citada ("CDC", "Lei nº 8.078/1990"). Usado por verificar_citacoes. */
+  apelidos?: string[];
 }
 
 export interface Origem {
@@ -69,9 +71,11 @@ export interface BuscarNormasSaida {
 export interface LerNormaEntrada {
   uri: LawUri;
 }
-export type LerNormaSaida = Norma & { aviso: string };
+/** truncado: o texto passou do limite da resposta. Leia por artigo (…/art-N). */
+export type LerNormaSaida = Norma & { aviso: string; truncado?: boolean };
 
-export type StatusCitacao = "ok" | "revogada" | "inexistente" | "divergente";
+/** fora_da_base: a norma citada não está carregada, então não dá para afirmar nada sobre ela. */
+export type StatusCitacao = "ok" | "revogada" | "inexistente" | "divergente" | "fora_da_base";
 export interface VerificarCitacoesEntrada {
   texto: string;
   /** Jurisdição padrão para citações sem esfera explícita. Padrão "br". */

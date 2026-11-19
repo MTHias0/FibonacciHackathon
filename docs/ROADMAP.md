@@ -87,11 +87,6 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
   - O roteiro inclui um checklist de palco (`rm -rf data/local`, Cmd+Q, chat anônimo, "Allow always") e perguntas de reserva.
   - Falta ensaiar as 5 perguntas no Claude Desktop.
 
-**Depois do MCP v2**
-- [ ] Repetir o roteiro de demo no Claude Desktop e no OpenBot.
-- [ ] Revisar as descrições das tools: se a IA escolhe a tool errada, a descrição está ruim.
-- [ ] Gravar um vídeo curto da demo funcionando, como plano B para o palco.
-
 ## Dev 2: dados e verificador
 
 **Agora**

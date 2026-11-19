@@ -102,6 +102,8 @@ Claude Desktop · Cursor · OpenBot ──stdio──▶ LawMCP (TS, @modelconte
 
 ## 8. Divisão de tarefas (3 devs + agentes)
 
+Checklist do que cada dev faz agora: [ROADMAP.md](ROADMAP.md).
+
 | Quem | Entrega |
 |---|---|
 | **Dev 1: MCP** | Entrega 1: servidor stdio e tools P0 com schemas. Depois: resources, prompts e tools P1 |

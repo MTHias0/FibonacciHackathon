@@ -55,7 +55,7 @@ As duas mudanças foram feitas a pedido do líder do time e estão registradas n
 ## Perguntas em aberto
 
 - Quais são os critérios de avaliação do hackathon e os MCPs ou APIs de patrocinadores?
-- O OpenBot suporta MCP via stdio?
+- O OpenBot do hackathon é o openbot.run? Se for, ele aceita MCP via stdio pelo painel próprio (código-fonte, 19/11/2026); falta rodar de verdade ([Guia de instalação](INSTALACAO.md#openbot)).
 - Qual é a próxima fonte: um estado brasileiro, outro município ou um estado dos EUA? (Roadmap, Dev 2)
 - Um servidor remoto para B2B, com autenticação e separação por organização, entra no escopo depois do hackathon?
 

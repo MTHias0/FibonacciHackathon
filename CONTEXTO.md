@@ -43,7 +43,7 @@
 
 ## Pendências
 
-- Testar no Claude Desktop (config no README) e confirmar se o OpenBot suporta MCP via stdio.
+- Testar no Claude Desktop e no OpenBot. Pelo código-fonte, o openbot.run aceita MCP via stdio no painel próprio (passos em `docs/INSTALACAO.md`); falta rodar de verdade e confirmar que é esse o OpenBot do hackathon.
 - Limitações conhecidas:
   - A busca usa radical por truncamento: "igualdade" não acha "iguais".
   - O verificador não confere alíneas.

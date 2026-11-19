@@ -1,13 +1,15 @@
 # Guia de instalação do LawMCP
 
-Do zero até o LawMCP respondendo no seu cliente de IA, em cerca de 10 minutos. Não precisa saber programar: é copiar e colar comandos e editar um arquivo de configuração.
+Como instalar o LawMCP e ligá-lo no **Claude Code** e no **OpenBot**. No fim, há o atalho para Claude Desktop e Cursor.
+
+O LawMCP é um servidor MCP local via **stdio**: o cliente (Claude Code, OpenBot…) inicia o processo `node src/server.ts` no computador e conversa com ele. Não há servidor na nuvem nem conta para criar.
 
 ## Resumo
 
 1. Instalar Node.js 24 e git.
-2. Baixar o projeto e instalar as dependências.
-3. Conferir se o servidor sobe.
-4. Ligar no cliente (Claude Desktop, Claude Code ou Cursor).
+2. Baixar o LawMCP e instalar as dependências.
+3. Conferir se o servidor sobe e anotar dois caminhos.
+4. Ligar no [Claude Code](#claude-code) ou no [OpenBot](#openbot).
 5. Testar com uma pergunta.
 
 ## 1. Pré-requisitos
@@ -16,121 +18,180 @@ Do zero até o LawMCP respondendo no seu cliente de IA, em cerca de 10 minutos. 
 |---|---|---|---|
 | Node.js | 24 ou superior | Roda o servidor (executa TypeScript direto, sem build) | `node -v` → `v24…` |
 | git | qualquer recente | Baixar o projeto; versionar as normas privadas | `git --version` |
-| Um cliente MCP | — | Claude Desktop, Claude Code, Cursor ou outro que aceite servidor via stdio | — |
 
-**Instalar o Node 24**
+- Node 24 com nvm (macOS e Linux): `nvm install 24`. O projeto tem `.nvmrc`, então dentro da pasta basta `nvm use`. Sem nvm, baixe a versão 24 em [nodejs.org](https://nodejs.org/).
+- git: no macOS, `xcode-select --install`; no Windows, [git-scm.com](https://git-scm.com/); no Linux, pelo gerenciador de pacotes.
 
-- Com nvm (recomendado no macOS e Linux): `nvm install 24`. O projeto tem `.nvmrc`, então dentro da pasta basta `nvm use`.
-- Sem nvm: baixe a versão 24 (LTS) em [nodejs.org](https://nodejs.org/).
-
-**Instalar o git:** no macOS, `xcode-select --install`; no Windows, [git-scm.com](https://git-scm.com/); no Linux, pelo gerenciador de pacotes.
-
-## 2. Baixar e instalar
+## 2. Baixar e instalar o LawMCP
 
 ```sh
 git clone https://github.com/MTHias0/FibonacciHackathon.git
 cd FibonacciHackathon
 nvm use        # se usar nvm
 npm ci
+npm test       # opcional: 18 testes, deve terminar com "fail 0"
 ```
 
 As leis da demo (cerca de 15 mil normas e artigos, 21 MB) já vêm no repositório, em `data/snapshot/`. Não há download extra.
 
-Opcional, para ter certeza de que está tudo certo:
-
-```sh
-npm test       # 18 testes; deve terminar com "fail 0"
-```
-
-## 3. Conferir se o servidor sobe
+## 3. Conferir se sobe e anotar os caminhos
 
 ```sh
 npm run mcp
 ```
 
-Em alguns segundos deve aparecer:
+Em alguns segundos aparece `LawMCP: 15162 normas carregadas em … ms`. O servidor fica parado esperando um cliente, e isso é normal. Saia com **Ctrl+C**.
 
-```
-LawMCP: 15162 normas carregadas em 3500 ms (…/data/snapshot)
-```
-
-O servidor fica parado esperando um cliente. Isso é normal: ele conversa pelo stdin e stdout, e quem o inicia de verdade é o cliente MCP. Saia com **Ctrl+C**.
-
-## 4. Anotar dois caminhos
-
-O cliente precisa de caminhos **absolutos**. Rode dentro da pasta do projeto:
+Agora anote dois caminhos **absolutos**, rodando dentro da pasta do projeto:
 
 ```sh
-which node                      # caminho do Node 24, ex.: /Users/ana/.nvm/versions/node/v24.12.0/bin/node
-echo "$PWD/src/server.ts"       # caminho do servidor, ex.: /Users/ana/FibonacciHackathon/src/server.ts
+which node                  # Node 24, ex.: /Users/ana/.nvm/versions/node/v24.12.0/bin/node
+echo "$PWD/src/server.ts"   # servidor, ex.: /Users/ana/FibonacciHackathon/src/server.ts
 ```
 
 No Windows (PowerShell): `(Get-Command node).Source` e `"$PWD\src\server.ts"`.
 
-Use o caminho completo do Node 24 em vez de só `node`: o cliente pode achar um Node antigo no sistema e falhar sem mensagem clara.
+Use sempre o caminho completo do Node 24, e não só `node`: o cliente pode achar outro Node (ou outro runtime) no sistema e falhar.
 
-## 5. Ligar no cliente
+---
 
-### Claude Desktop
+## Claude Code
 
-1. Abra **Settings › Developer › Edit Config**. Isso abre o `claude_desktop_config.json`:
-   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-2. Cole o bloco abaixo com os seus caminhos do passo 4. Se já houver outros servidores em `mcpServers`, só acrescente o `lawmcp`.
+### Instalar
+
+Dentro da pasta do projeto, escolha onde o LawMCP vai valer:
+
+```sh
+# Em todos os seus projetos (recomendado)
+claude mcp add --scope user lawmcp -- "$(which node)" "$PWD/src/server.ts"
+
+# Só neste projeto, só para você (padrão)
+claude mcp add lawmcp -- "$(which node)" "$PWD/src/server.ts"
+```
+
+| Escopo | Onde fica | Quem vê |
+|---|---|---|
+| `local` (padrão) | Configuração do Claude Code, ligada a este projeto | Só você, só neste projeto |
+| `user` | Configuração do Claude Code | Só você, em todos os projetos |
+| `project` | Arquivo `.mcp.json` na raiz do projeto | Todo mundo que abrir o projeto (gera caminhos da sua máquina: não suba esse arquivo) |
+
+Com variáveis de ambiente (opcional; o `-e` vem depois do nome):
+
+```sh
+claude mcp add --scope user lawmcp -e LAWMCP_LOCAL="$HOME/lawmcp-normas" -- "$(which node)" "$PWD/src/server.ts"
+```
+
+### Conferir
+
+```sh
+claude mcp list          # lawmcp: … - ✓ Connected
+claude mcp get lawmcp    # comando, argumentos e escopo
+```
+
+Dentro de uma sessão do Claude Code, digite `/mcp`. O `lawmcp` aparece conectado, com as 9 tools.
+
+### Usar
+
+Abra o `claude` (em qualquer pasta, se usou `--scope user`) e pergunte:
+
+> Quais jurisdições você tem?
+
+O Claude chama `mcp__lawmcp__listar_jurisdicoes` e responde com `br/federal`, `br/sp/birigui` e `es`. Na primeira chamada de cada tool, ele pede permissão.
+
+Para não ser perguntado a cada tool, libere o servidor inteiro no `settings.json` do Claude Code (`~/.claude/settings.json` para todos os projetos):
 
 ```json
 {
-  "mcpServers": {
-    "lawmcp": {
-      "command": "/Users/ana/.nvm/versions/node/v24.12.0/bin/node",
-      "args": ["/Users/ana/FibonacciHackathon/src/server.ts"]
-    }
+  "permissions": {
+    "allow": ["mcp__lawmcp"]
   }
 }
 ```
 
-No Windows, escreva as barras dobradas: `"C:\\Users\\ana\\FibonacciHackathon\\src\\server.ts"`.
+Isso libera também `adicionar_norma` e `importar_normas`, que gravam em `data/local/`. Se preferir confirmar essas duas, libere uma a uma: `"mcp__lawmcp__buscar_normas"`, `"mcp__lawmcp__ler_norma"` e assim por diante.
 
-3. Feche o Claude Desktop por completo (no macOS, **Cmd+Q**) e abra de novo.
-4. Em **Settings › Developer**, o `lawmcp` deve aparecer como conectado.
+### Atualizar e remover
 
-### Claude Code
+- Atualizar: `git pull && npm ci` na pasta do projeto e abra uma sessão nova do Claude Code.
+- Remover: `claude mcp remove lawmcp` (acrescente `--scope user` se instalou assim).
 
-Dentro da pasta do projeto:
+---
 
-```sh
-claude mcp add lawmcp -- "$(which node)" "$PWD/src/server.ts"
-```
+## OpenBot
 
-Para usar em todos os projetos, acrescente `--scope user` depois de `add`. Confira com `claude mcp list`.
+Vale para o [OpenBot](https://openbot.run/) (app de agentes da nightly-labs). O OpenBot cadastra servidores MCP no próprio painel e os entrega aos agentes dele (Claude, Codex e outros provedores).
 
-### Cursor
+> **Importante:** configurar o LawMCP no Claude Code **não** basta para o OpenBot. Ele inicia o agente Claude ignorando o `.mcp.json` e as configurações MCP do Claude Code, e só usa os servidores cadastrados no painel do OpenBot.
 
-Crie ou edite `~/.cursor/mcp.json` (vale para todos os projetos) com o mesmo bloco `mcpServers` do Claude Desktop. Depois, confira em **Settings › MCP**.
+### Instalar
 
-### Outros clientes
+1. Faça os passos 1 a 3 deste guia **na mesma máquina onde o OpenBot roda**. No app de desktop, é o seu computador. Num OpenBot em servidor (VPS ou hospedado), o LawMCP precisa estar instalado nesse servidor, com os caminhos de lá.
+2. No OpenBot, abra **Marketplace** (barra superior) › **Your apps** › **Add custom**. Abre o painel **Connect to a custom MCP**.
+3. Preencha:
 
-Qualquer cliente que aceite servidor MCP via **stdio** serve: o comando é o caminho do Node 24 e o argumento é o caminho de `src/server.ts`. O LawMCP ainda não tem modo HTTP.
+| Campo no OpenBot | Valor |
+|---|---|
+| **Name** | `lawmcp` |
+| **Transport** | STDIO |
+| **Command to launch** | Caminho completo do Node 24 (passo 3), ex.: `/Users/ana/.nvm/versions/node/v24.12.0/bin/node`. Só o programa, sem argumentos |
+| **Arguments** › Argument 1 | Caminho completo do servidor, ex.: `/Users/ana/FibonacciHackathon/src/server.ts` |
+| **Environment variables** | Opcional: `LAWMCP_LOCAL` = pasta das normas privadas |
+| **Working directory** | **Deixe vazio.** Com ele vazio, o servidor vai para todos os provedores; preenchido, só Claude e Codex recebem |
 
-## 6. Testar
+4. Clique em **Test connection**. O esperado é **Connected · 9 tools**.
+5. Salve e deixe o servidor **Enabled**.
 
-Abra uma conversa nova e pergunte:
+### Usar
+
+Abra uma conversa com um agente e pergunte "Quais jurisdições você tem?". Na primeira chamada, o OpenBot pode pedir consentimento para a tool. Para a demo, escolha a opção de sempre permitir.
+
+### Por que o caminho do Node 24
+
+Para servidores STDIO, o OpenBot baixa um runtime próprio (Bun) e o coloca por último no PATH. Se o comando for só `node`, ele pode achar um Node antigo, ou nenhum, e o LawMCP não sobe (`Did not start`). Com o caminho completo do Node 24, não há dúvida.
+
+### Status
+
+**A confirmar:** o time ainda não rodou o LawMCP dentro do OpenBot. Os passos acima vêm do código-fonte e dos textos da interface do OpenBot ([nightly-labs/openbot](https://github.com/nightly-labs/openbot)), versão de novembro de 2026. Existem outros projetos chamados "OpenBot". Se o do hackathon for outro, avise o time (ROADMAP, Dev 1).
+
+---
+
+## Testar
+
+Em qualquer cliente, faça duas perguntas:
 
 > Quais jurisdições você tem?
 
-O cliente deve chamar `listar_jurisdicoes` (na primeira vez, ele pede permissão; escolha permitir) e responder com `br/federal`, `br/sp/birigui` e `es`. Depois tente:
-
 > O art. 49 do CDC ainda vale? Cite a fonte.
 
-A resposta deve trazer o texto oficial, "vigente", o link do Planalto e um permalink do GitHub.
-
-A primeira chamada pode levar alguns segundos: o servidor está carregando as leis na memória.
+A segunda deve trazer o texto oficial, "vigente", o link do Planalto e um permalink do GitHub. A primeira chamada pode levar alguns segundos, enquanto o servidor carrega as leis na memória.
 
 Para testar sem cliente de IA, use o MCP Inspector, que abre as tools no navegador:
 
 ```sh
 npx @modelcontextprotocol/inspector node src/server.ts
 ```
+
+O roteiro completo da demo está no [DEMO.md](DEMO.md).
+
+## Outros clientes: Claude Desktop e Cursor
+
+O bloco de configuração é o mesmo para os dois:
+
+```json
+{
+  "mcpServers": {
+    "lawmcp": {
+      "command": "/Users/ana/.nvm/versions/node/v24.12.0/bin/node",
+      "args": ["/Users/ana/FibonacciHackathon/src/server.ts"],
+      "env": { "LAWMCP_LOCAL": "/Users/ana/lawmcp-normas" }
+    }
+  }
+}
+```
+
+- **Claude Desktop:** Settings › Developer › Edit Config (`~/Library/Application Support/Claude/claude_desktop_config.json` no macOS; `%APPDATA%\Claude\claude_desktop_config.json` no Windows). Feche o app por completo (Cmd+Q) e abra de novo.
+- **Cursor:** `~/.cursor/mcp.json`. Confira em Settings › MCP.
+- O `env` é opcional. No Windows, escreva os caminhos com barras dobradas (`C:\\Users\\ana\\…`).
 
 ## Configurações opcionais
 
@@ -139,51 +200,28 @@ npx @modelcontextprotocol/inspector node src/server.ts
 | `LAWMCP_DATA` | `data/snapshot` | Usar outra pasta de leis |
 | `LAWMCP_LOCAL` | `data/local` | Onde `adicionar_norma` e `importar_normas` gravam as normas privadas (um repositório git próprio) |
 
-No Claude Desktop e no Cursor, as variáveis vão num campo `env` dentro do bloco do servidor:
+As normas privadas ficam só na máquina e nunca vão para o repositório do LawMCP.
 
-```json
-"lawmcp": {
-  "command": "/caminho/do/node24",
-  "args": ["/caminho/do/FibonacciHackathon/src/server.ts"],
-  "env": { "LAWMCP_LOCAL": "/Users/ana/Documentos/lawmcp-normas" }
-}
-```
+## Atualizar e desinstalar
 
-As normas privadas ficam só no seu computador e nunca vão para o repositório do LawMCP.
-
-## Atualizar
-
-```sh
-cd FibonacciHackathon
-git pull
-npm ci
-```
-
-Depois, reinicie o cliente (no Claude Desktop, Cmd+Q e abrir de novo). Para baixar versões mais novas das próprias leis, veja [04. Dados e fontes](04-dados-e-fontes.md).
-
-## Desinstalar
-
-1. Tire o bloco `lawmcp` da configuração do cliente (ou `claude mcp remove lawmcp` no Claude Code) e reinicie o cliente.
-2. Apague a pasta do projeto. As normas privadas estão em `data/local/` dentro dela (ou em `LAWMCP_LOCAL`): faça backup antes, se quiser guardá-las.
+- **Atualizar:** `git pull && npm ci` na pasta do projeto e reinicie o cliente (sessão nova no Claude Code; no OpenBot, desligue e ligue o servidor ou reabra o app).
+- **Desinstalar:** remova o servidor do cliente (`claude mcp remove lawmcp`; no OpenBot, Your apps › lawmcp › Remove server) e apague a pasta do projeto. Antes, faça backup de `data/local/` (ou de `LAWMCP_LOCAL`) se quiser guardar as normas privadas.
 
 ## Problemas comuns
 
 | Sintoma | Causa provável | Solução |
 |---|---|---|
-| O `lawmcp` não aparece ou aparece com erro no cliente | Caminho relativo, errado ou Node antigo | Caminhos absolutos do passo 4; `node -v` precisa ser 24 ou superior |
-| `ERR_UNKNOWN_FILE_EXTENSION ".ts"` ao subir | Node abaixo do 24 | Use o caminho completo do Node 24 no `command` |
+| `claude mcp list` mostra o lawmcp com falha | Caminho relativo, errado ou Node antigo | Refaça o `claude mcp add` com os caminhos absolutos do passo 3 |
+| OpenBot mostra **Did not start** ou **Failed** no Test connection | O comando não é o Node 24, ou o caminho do servidor está errado | Command = caminho completo do Node 24; Argument 1 = caminho completo de `src/server.ts` |
+| O lawmcp funciona no Claude Code mas não aparece no OpenBot | O OpenBot ignora a configuração MCP do Claude Code | Cadastre no painel do OpenBot (Marketplace › Your apps › Add custom) |
+| No OpenBot, só os agentes Claude e Codex veem o lawmcp | O campo Working directory foi preenchido | Deixe Working directory vazio |
+| `ERR_UNKNOWN_FILE_EXTENSION ".ts"` | Node abaixo do 24 | Use o caminho completo do Node 24 |
 | `Cannot find package '@modelcontextprotocol/sdk'` | Faltou instalar as dependências | `npm ci` na pasta do projeto |
-| JSON inválido no Claude Desktop | Vírgula sobrando ou faltando; barras simples no Windows | Valide o JSON; no Windows use `\\` |
-| As tools não aparecem depois de editar a config | O cliente não foi reiniciado de verdade | Feche por completo (Cmd+Q) e abra de novo |
 | A primeira resposta demora | O índice ainda está carregando (4 a 14 s a frio) | Espere; as próximas são imediatas |
 | `adicionar_norma` ou `importar_normas` dão erro de git | git não instalado | Instale o git (passo 1) |
 | O servidor não sobe depois de mexer em `data/snapshot/fontes.json` | Configuração inválida | Rode `npm run mcp` no terminal: a mensagem diz o campo errado |
 
-**Onde ver os logs:** o servidor escreve só no stderr, e o cliente guarda isso.
-
-- Claude Desktop, macOS: `~/Library/Logs/Claude/mcp-server-lawmcp.log` (acompanhe com `tail -f`).
-- Claude Desktop, Windows: `%APPDATA%\Claude\logs\`.
-- Ou rode `npm run mcp` direto no terminal e veja a mensagem.
+Para ver o erro com calma, rode `npm run mcp` no terminal: tudo o que o servidor tem a dizer sai ali (ele escreve só no stderr).
 
 ## O que já foi testado
 
@@ -192,10 +230,12 @@ Depois, reinicie o cliente (no Claude Desktop, Cmd+Q e abrir de novo). Para baix
 | macOS, Node 24.12, testes automáticos (incluindo um cliente MCP real via stdio) | Testado |
 | MCP Inspector (interface web e CLI) | Testado em 19/11/2026 |
 | Claude Desktop no macOS | Testado com o MCP v1; **a confirmar** com a versão atual ([DEMO.md](DEMO.md)) |
-| Claude Code, Cursor, Windows, Linux | **A confirmar** |
+| Claude Code | **A confirmar** |
+| OpenBot | **A confirmar** (passos tirados do código-fonte do OpenBot) |
+| Cursor, Windows, Linux | **A confirmar** |
 
 ## Próximos passos
 
-- Ver o que cada tool faz: [03. Referência MCP](03-referencia-mcp.md).
+- O que cada tool faz: [03. Referência MCP](03-referencia-mcp.md).
 - Fazer a demo: [DEMO.md](DEMO.md).
 - Adicionar leis de outro município ou as normas do seu escritório: [05. Jurisdições próprias](05-jurisdicoes-proprias.md).

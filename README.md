@@ -46,7 +46,7 @@ O `manifest.json` guarda o commit de cada fonte, e é dele que saem os permalink
 
 ## Plugar num cliente MCP
 
-Passo a passo completo, com Windows, variáveis e problemas comuns: [docs/INSTALACAO.md](docs/INSTALACAO.md).
+Passo a passo para **Claude Code** e **OpenBot** (e Claude Desktop, Cursor), com problemas comuns: [docs/INSTALACAO.md](docs/INSTALACAO.md).
 
 Use caminhos **absolutos**. Descubra o seu Node 24 com `which node` (o cliente pode usar um Node antigo do PATH).
 

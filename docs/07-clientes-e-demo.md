@@ -21,7 +21,7 @@ Perguntas extras para mostrar as jurisdições próprias, fora do roteiro de 3 m
 - MCP Inspector: testado em 19/11/2026 na interface web e em modo CLI. Foram 9 tools, 704 resources e 4 prompts; todas as tools chamadas, entradas inválidas recusadas. Registro no [Roadmap](ROADMAP.md).
 - Claude Desktop: testado com o MCP v1 (as perguntas do README voltaram com texto, fonte e vigência). **A confirmar:** ensaiar as 5 perguntas do [DEMO.md](DEMO.md) na versão atual.
 - Cursor: **a confirmar** (não estava instalado no teste).
-- OpenBot: **a confirmar** se aceita MCP via stdio.
+- OpenBot (openbot.run): aceita MCP via stdio pelo painel Marketplace › Your apps › Add custom, segundo o código-fonte dele. Ignora a configuração MCP do Claude Code. **A confirmar** rodando de verdade. Passos no [Guia de instalação](INSTALACAO.md#openbot).
 - O teste ponta a ponta via stdio passa a cada `npm test` ([08](08-testes-e-qualidade.md)).
 
 ## Evidências

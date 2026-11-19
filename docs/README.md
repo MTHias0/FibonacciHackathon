@@ -8,7 +8,7 @@ Esta pasta explica o que ele faz, como funciona por dentro e como usar, estender
 
 | Quero… | Leia |
 |---|---|
-| **Instalar e ligar no Claude Desktop, Claude Code ou Cursor** | **[Guia de instalação](INSTALACAO.md)** |
+| **Instalar e ligar no Claude Code ou no OpenBot** (e Claude Desktop, Cursor) | **[Guia de instalação](INSTALACAO.md)** |
 | Entender o produto, o problema e o pitch | [01. Visão geral](01-visao-geral.md) |
 | Entender o código e como as peças se ligam | [02. Arquitetura](02-arquitetura.md) |
 | Saber o que cada tool recebe e devolve | [03. Referência MCP](03-referencia-mcp.md) |

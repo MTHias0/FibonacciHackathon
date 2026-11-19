@@ -53,6 +53,7 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
 - [x] Descobrir o que é exatamente o "OpenBot" que vamos usar e se ele aceita servidor MCP via **stdio**. Se só aceitar HTTP, avisar o time na hora: isso muda a infra.
   - Configurado em 2026-11-19, por um colega, em outro computador.
   - **A preencher por quem configurou:** o que é o OpenBot (link ou versão), o transporte usado (stdio ou HTTP), o arquivo de config com o snippet `mcpServers`, o passo a passo e as perguntas testadas.
+  - Pesquisa no código-fonte do openbot.run (nightly-labs/openbot), em 19/11/2026: aceita MCP via **STDIO** pelo painel Marketplace › Your apps › Add custom. O agente Claude lá dentro ignora a config MCP do Claude Code, então é preciso cadastrar no painel. Passo a passo em `docs/INSTALACAO.md` › OpenBot. Quem configurou: confira se bate e corrija o guia se não bater.
 - [x] Testar o servidor no MCP Inspector (`npx @modelcontextprotocol/inspector node src/server.ts`).
   - O que é: a ferramenta oficial de teste do MCP. Funciona como um cliente sem IA, em que você chama cada tool à mão e vê o JSON cru que a IA receberia. Não precisa instalar nem ter conta, porque o `npx` baixa na hora. Se funciona no Inspector mas a IA erra, o problema está na descrição da tool, não no código.
   - Passo a passo da interface web:
@@ -71,6 +72,7 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
     - `adicionar_norma` e `importar_normas`: commits, nova versão e reimportação sem mudanças funcionaram.
     - Entradas inválidas (`../hack`, pasta inexistente, `law://../../etc/passwd`) foram recusadas.
   - Erro: `comparar_jurisdicoes` com "igualdade perante a lei" não traz o art. 5º da CF no Brasil. Vêm Licitações art. 80, Propriedade Industrial art. 4º e Liberdade Econômica art. 2º. A pergunta foi trocada no roteiro de demo.
+    - Corrigido no commit `d9eab9a`: artigos longos agora também são buscados por dispositivo, e o art. 5º vem em 1º. Teste de regressão em `buscar_normas`.
   - Cosmético:
     - O `texto` traz âncoras HTML (`<a id="par-unico"></a>`).
     - Um arquivo importado sem frontmatter recebe como título o nome do arquivo ("reembolso").

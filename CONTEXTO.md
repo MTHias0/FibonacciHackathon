@@ -3,7 +3,7 @@
 ## Estado
 
 - Base TypeScript pronta (`npm run typecheck`, `build` e `start` passam). Nenhuma funcionalidade implementada.
-- Ideia em brainstorm: legislação brasileira versionada em git exposta via MCP. Detalhes em `docs/IDEIAS-MCP.md`.
+- Ideia convergida: **LawMCP**, um servidor MCP para consultar, citar e verificar leis de qualquer jurisdição. Plano completo em `docs/IDEIAS-MCP.md`.
 
 ## Fatos
 
@@ -14,15 +14,18 @@
 
 - TypeScript estrito, Node.js 24 ou superior, ESM. Sem frameworks até o escopo ser aprovado.
 - `AGENTS.md` é a fonte única de instruções. `CONTEXTO.md` é o único registro de estado.
+- Produto: **LawMCP**. A integração via MCP é o foco, com front mínimo. Público B2B (advogados, empresas, plataformas) e B2C (cidadãos).
+- Demo: BR federal + 1 município + Espanha, com `adicionar_norma`. MCP só local (stdio).
+- Prazo: 3h, 3 devs com agentes (MCP, back/dados, infra/front). Divisão em `docs/IDEIAS-MCP.md` §8.
 
 ## Pendências
 
-- Fechar a ideia e o MVP (brainstorm em andamento, ver `docs/IDEIAS-MCP.md`).
-- Regras e critérios do hackathon, prazo, tamanho do time, MCPs ou APIs de patrocinadores, demo local ou hospedada.
+- Confirmar o município da demo (recomendado: Birigui/SP) e se o OpenBot suporta MCP via stdio.
+- Critérios de avaliação do hackathon e MCPs ou APIs de patrocinadores.
 - Skill `grillme`, pedida por um colega: origem desconhecida.
 
 ## Próximo passo
 
-Concluir o brainstorm e registrar aqui a ideia e o MVP aprovados.
+Congelar o contrato (`Norma`, URIs, schemas das tools) em `src/types.ts` e dividir as tarefas conforme `docs/IDEIAS-MCP.md` §8.
 
 <!-- Atualizado em 2026-11-19 por Claude (sessão de João Matheus). -->

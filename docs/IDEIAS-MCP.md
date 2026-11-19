@@ -1,229 +1,121 @@
-# Ideias: legislação versionada em git + MCP
+# LawMCP: brainstorm e plano do hackathon
 
-> **Estado:** brainstorm. Nada aqui é decisão aprovada, exceto o que está marcado como **fato** no item 1.
-> Pesquisa e redação: Claude, a pedido de João Matheus, em 2026-11-19.
-> Objetivo: dar ao time o contexto inicial para escolher o projeto do hackathon.
+> Estado: ideia **convergida** no brainstorm de 2026-11-19 (João Matheus + Claude).
+> O que está em **Decidido** foi confirmado pelo time. O resto é recomendação.
 
-## Sumário
+## 1. A ideia em uma frase
 
-1. [Fatos confirmados](#1-fatos-confirmados)
-2. [A ideia de origem: lei como código](#2-a-ideia-de-origem-lei-como-código)
-3. [Por que isso combina com MCP](#3-por-que-isso-combina-com-mcp)
-4. [Panorama: o que já existe](#4-panorama-o-que-já-existe)
-5. [Ideias de produto](#5-ideias-de-produto)
-6. [Arquitetura MCP proposta](#6-arquitetura-mcp-proposta)
-7. [Recomendação de MVP para o hackathon](#7-recomendação-de-mvp-para-o-hackathon)
-8. [Riscos e perguntas em aberto](#8-riscos-e-perguntas-em-aberto)
-9. [Fontes](#9-fontes)
+**Um único servidor MCP para consultar, citar e verificar a lei de qualquer jurisdição** (país, estado, município, distrito; lei, decreto, portaria…), com fonte, vigência e histórico em cada resposta. Qualquer agente de IA (Claude, Cursor, OpenBot, plataformas jurídicas) pluga e para de alucinar lei.
 
----
+## 2. Decidido
 
-## 1. Fatos confirmados
-
-- O tema central do hackathon é **integração via MCP (Model Context Protocol)**. Desde o início, o projeto deve ser pensado como servidores e clientes MCP.
-- O ponto de partida das ideias é o repositório [ctresb/leis](https://github.com/ctresb/leis) e outros que seguem a mesma linha.
-- A base do repositório é TypeScript estrito, Node.js 24 ou superior e ESM (ver `AGENTS.md`).
-
-Todo o resto deste documento é proposta.
-
-## 2. A ideia de origem: lei como código
-
-O [ctresb/leis](https://github.com/ctresb/leis) organiza a legislação brasileira assim:
-
-- **Um arquivo Markdown por norma**, com cabeçalho YAML (`titulo`, `tipo`, `numero`, `data`, `ementa`, `situacao`, `revogada`, `fonte`…).
-- **O histórico do git funciona como linha do tempo legislativa.** São 323.851 commits, um por norma, em ordem cronológica desde 1822. Cada commit é atribuído ao signatário da norma (5.414 autores).
-- **Abrange todo o ordenamento:** federal, estadual, municipal, reguladores (CONTRAN, ANVISA, RFB, CMN…), jurisprudência vinculante e tratados.
-- Os textos são atos oficiais, sem proteção autoral (Lei 9.610/98, art. 8º, I). Os scripts estão sob MIT.
-- Limitações declaradas: erros de OCR, lacunas em alguns estados (RJ, MG…) e cerca de 134 GB em disco.
-
-A sacada é que **as perguntas que um advogado faz sobre uma lei viram comandos git**:
-
-| Pergunta jurídica | Primitiva git |
+| Tema | Decisão |
 |---|---|
-| Qual lei escreveu esta frase? | `git blame` |
-| Como era este artigo em 2015? | `git show <commit-em-2015>:arquivo` |
-| O que mudou entre duas datas? | `git diff` |
-| Qual é a história deste artigo? | `git log --follow` |
-| Quem assinou? | autor do commit |
+| Nome | **LawMCP** |
+| Foco | A integração via MCP é o produto. Front e painéis são mínimos |
+| Público | Advogados e escritórios (nicho principal), cidadãos, empresas e compliance, devs e plataformas que integram o MCP. B2B e B2C |
+| Visão | Global: qualquer país e esfera, qualquer tipo de norma |
+| Demo | **BR federal + 1 município + Espanha**, com a possibilidade de **adicionar normas** |
+| Transporte | **Só local (stdio)** |
+| Tempo e time | **3 horas**, 3 devs com agentes de IA, divididos em MCP, back/dados e infra/front |
 
-## 3. Por que isso combina com MCP
+## 3. Por que MCP
 
-Um LLM sozinho **alucina legislação**: inventa artigos, cita redação revogada e não sabe o que mudou depois do corte de treino. O MCP resolve isso dando ao modelo **ferramentas** para consultar uma fonte versionada e citável no momento da pergunta.
+- Um LLM sozinho inventa artigos e cita redação revogada. O LawMCP devolve **texto oficial com URI, fonte e data**.
+- **B2C:** o cidadão pergunta no assistente que já usa, e o assistente consulta o LawMCP.
+- **B2B:** escritórios e plataformas plugam o LawMCP no próprio agente e **adicionam normas próprias** (convenções coletivas, regimentos, normas internas).
+- O git como linha do tempo vira um diferencial: "qual lei mudou este artigo e quando" sai de `git log` e `git blame`.
 
-- **Tools** (o modelo chama): buscar norma, ler artigo, texto em vigor numa data, diff, blame.
-- **Resources** (o cliente anexa como contexto): `lei://federal/lei/8078/art-49`, com URI estável e citável.
-- **Prompts** (fluxos prontos): "explique este artigo", "compare versões", "verifique as citações deste texto".
-- **Composição:** o mesmo cliente (Claude Desktop, Claude Code, Cursor, um agente próprio) liga o nosso MCP de leis a outros MCPs (GitHub, Drive, Slack, calendário). É essa integração que o hackathon valoriza.
+## 4. Fontes de dados (levantadas em 2026-11-19 via API do GitHub)
 
-O diferencial é que **cada resposta sai com fonte, data de vigência e commit**. Isso é auditável.
+| Jurisdição | Repo | Formato | Observação |
+|---|---|---|---|
+| 🇧🇷 Federal | [Evaldoes/legislacao-br](https://github.com/Evaldoes/legislacao-br) | **1 arquivo por artigo**, frontmatter (`id`, `norma`, `artigo`, `hierarquia`, `fonte`, `revogado`) | 1,5 MB, CC0. CF/88, CLT, CDC, ECA e Inquilinato. **Ideal para a demo** |
+| 🇧🇷 Federal (amplo) | [ctresb/leis](https://github.com/ctresb/leis) `federal/` | 1 arquivo por norma | 8,6 GB no GitHub. Só com sparse-checkout |
+| 🇧🇷 Município | [ctresb/leis](https://github.com/ctresb/leis) `municipais/SP/birigui/` | 1 arquivo por norma | **Birigui** tem leis ordinárias, complementares, decretos e resoluções. A capital paulista só tem a lei orgânica e decretos de 2026 |
+| 🇪🇸 Espanha | [legalize-dev/legalize-es](https://github.com/legalize-dev/legalize-es) `es/` e `es-an`… | 1 arquivo por norma, frontmatter rico (`title`, `identifier`, `rank`, `status`, `source` ELI, `publication_date`) | 3,8 GB, atualizado diariamente. Tem também as 17 comunidades autônomas |
+| 🇺🇸 EUA (futuro) | [lexifina](https://github.com/lexifina) | 1 arquivo por dispositivo, commit = lei | **Atenção: um repositório por estado** (`united-states-california-law`, `-texas-law`, `-florida-law`…), além do federal `united-states-law` e de repositórios de jurisprudência |
+| 🌍 Outros | lexifina (Reino Unido, Quênia, Gana…), [legalize-br](https://github.com/danalec/legalize-br) (mesmo formato do legalize-es) | — | Para o pitch "global" |
 
-## 4. Panorama: o que já existe
+**Regra:** nunca clonar repositório inteiro. Usar `git clone --filter=blob:none --sparse` e puxar só as pastas da demo.
 
-### 4.1 Brasil
+## 5. Modelo unificado (o coração do "global")
 
-| Repo | Escopo | Granularidade | Commit = | Destaque |
-|---|---|---|---|---|
-| [ctresb/leis](https://github.com/ctresb/leis) | Todo o ordenamento (federal, estadual, municipal, reguladores, jurisprudência) | 1 arquivo por norma | surgimento da norma, autor = signatário | O mais amplo. Pesado (cerca de 134 GB) |
-| [danalec/legalize-br](https://github.com/danalec/legalize-br) | Federal, 1988–2026, cerca de 198 mil normas | 1 arquivo por norma | publicação no DOU | Formato Legalize (o mesmo da Espanha). Sem scripts publicados |
-| [Evaldoes/legislacao-br](https://github.com/Evaldoes/legislacao-br) | Federal em vigor: CF, CLT, CDC, ECA e Inquilinato | **1 arquivo por artigo** | uma mudança de texto | `git blame` útil, CI, atualização semanal via PR, CC0. Só 5 leis |
-| [LawCodex/br](https://github.com/LawCodex/br) | Federal compilada do Planalto | — | — | Só o texto em vigor (descarta o riscado) |
+Cada adaptador converte a sua fonte para o mesmo formato:
 
-Comparação resumida:
-- **ctresb**: amplitude e cronologia. Responde "o que existe e quando surgiu".
-- **legalize-br**: dataset federal leve e padronizado internacionalmente.
-- **legislacao-br**: profundidade por artigo. Responde "o que mudou neste inciso e por quê".
-
-### 4.2 Outros países (mesma ideia)
-
-- [lexifina/global-law](https://github.com/lexifina/global-law): vários países num único histórico, cada país num submódulo ([EUA](https://github.com/lexifina/united-states-law), [Reino Unido](https://github.com/lexifina/united-kingdom-law), Quênia, Gana, Tanzânia, Líbano). Inclui **jurisprudência** com um commit por decisão ([exemplo](https://github.com/lexifina/united-states-ca1-caselaw)).
-- [legalize-dev/legalize-es](https://github.com/legalize-dev/legalize-es): Espanha, a partir da API do BOE, padrão ELI, leis nacionais e autonômicas.
-- [Legilibre/Archeo-Lex](https://github.com/Legilibre/Archeo-Lex): França, o pioneiro.
-- [bundestag/gesetze](https://github.com/bundestag/gesetze): Alemanha (BundesGit, não oficial).
-- [Kohei-Wada/houritsu](https://github.com/Kohei-Wada/houritsu): Japão, via API do e-Gov.
-- [indiavotes/india-law](https://github.com/indiavotes/india-law): Índia.
-- [DCCouncil](https://github.com/DCCouncil): Washington DC, onde o **GitHub é a fonte oficial** da lei.
-- Constituições com uma emenda por commit: [EUA](https://github.com/anthonygarvan/theconstitution), [Índia](https://github.com/vijaya22/constitution-history), [Peru](https://github.com/Duvet05/Constitucion-Politica-del-Peru).
-
-### 4.3 Mesma ideia em outros temas
-
-- [Open Terms Archive](https://github.com/OpenTermsArchive/contrib-versions): termos de uso e políticas de privacidade coletados todo dia, com cada mudança virando um commit.
-- **Git scraping** (técnica popularizada por Simon Willison): um GitHub Action baixa um dado público periodicamente e commita só a diferença.
-- **Querido Diário** (Open Knowledge Brasil): diários oficiais municipais com API pública. *A confirmar se a API atende ao nosso uso.*
-
-## 5. Ideias de produto
-
-Cada ideia já vem descrita pelas suas peças MCP. As estrelas (★) indicam a aderência estimada ao tema do hackathon.
-
-### A. LexMCP: servidor MCP da legislação brasileira ★★★
-O núcleo de quase todas as outras ideias.
-- **Tools:** `buscar_normas`, `ler_artigo`, `texto_em_vigor_em(norma, data)`, `historico_artigo`, `quem_alterou(trecho)` (blame), `diff_entre_datas`, `normas_relacionadas`.
-- **Resources:** `lei://{esfera}/{tipo}/{numero}[/art-N]`.
-- **Prompts:** `explicar_artigo`, `comparar_versoes`, `linha_do_tempo`.
-- **Demo:** no Claude Desktop, "o art. 49 do CDC mudou desde 2010? Mostre o diff e a lei que alterou".
-
-### B. Verificador de citações jurídicas (anti-alucinação) ★★★
-Recebe um texto (petição, parecer, resposta de IA) e confere cada citação: o artigo existe? Está em vigor? A redação citada bate com a oficial?
-- **Tool:** `verificar_citacoes(texto)`, que devolve um relatório por citação (ok, revogada, inexistente ou redação divergente).
-- **Pitch:** um "linter" jurídico para textos gerados por IA.
-
-### C. Radar de mudanças (compliance) ★★☆
-Monitora normas de interesse (CLT, LGPD, resoluções do Bacen/CVM) e avisa o que mudou, com o diff.
-- **Tools:** `assinar_normas`, `mudancas_desde(data)`.
-- **Composição MCP:** gera uma issue no GitHub, uma mensagem no Slack ou um evento no calendário quando há vigência futura.
-- **Coleta:** git scraping, com um Action semanal no estilo do legislacao-br.
-
-### D. Explicador cidadão em linguagem simples ★★☆
-Uma pessoa pergunta "posso devolver um produto comprado online?" e recebe uma resposta simples **com o artigo e o link oficial**.
-- Usa o LexMCP por baixo. O canal pode ser web ou WhatsApp.
-- Cuidado: precisa de um aviso claro de que não substitui um advogado.
-
-### E. Direito comparado ★★☆
-Com o formato Legalize (Brasil e Espanha) e o lexifina, comparar temas entre países, por exemplo "como cada país regula o direito de arrependimento".
-- **Tool:** `comparar_paises(tema, paises[])`.
-
-### F. Diários oficiais municipais + MCP ★★☆
-O MCP consulta os diários municipais (Querido Diário) para licitações, nomeações e leis locais. Combina com o LexMCP para a parte municipal.
-
-### G. Termos de uso brasileiros versionados ★☆☆
-Um "Open Terms Archive BR" para apps brasileiros (bancos, gov.br, delivery), mais um MCP: "o que mudou na política de privacidade do app X?". Conecta com a LGPD do LexMCP.
-
-### H. Visualizações: "git blame da Constituição" ★☆☆
-Linha do tempo interativa (quem alterou o quê e quando), alimentada pelas mesmas tools. Boa para a demo visual do pitch.
-
-### I. Copiloto regulatório setorial ★★☆
-Recorte de reguladores (ANVISA, CONTRAN, Bacen) para um público específico, por exemplo fintechs: "quais resoluções do CMN afetam o Pix este ano?".
-
-## 6. Arquitetura MCP proposta
-
-```
-┌──────────────────────┐      MCP (stdio / Streamable HTTP)      ┌──────────────────────────┐
-│ Cliente MCP          │ ───────────────────────────────────────▶│ LexMCP (TypeScript)      │
-│ Claude Desktop/Code, │   tools · resources · prompts           │  ├─ camada de busca      │
-│ Cursor, agente nosso │                                         │  │   (SQLite FTS5)       │
-└──────────┬───────────┘                                         │  ├─ camada git           │
-           │ outros MCPs                                         │  │   (log/show/diff/blame)│
-           ▼                                                     │  └─ normalizador de URI  │
-  GitHub · Slack · Drive · Querido Diário                        └────────────┬─────────────┘
-                                                                              │ leitura
-                                                                 ┌────────────▼─────────────┐
-                                                                 │ Dados: clone parcial de  │
-                                                                 │ legislacao-br / ctresb   │
-                                                                 └──────────────────────────┘
+```ts
+type Norma = {
+  uri: string;            // law://br/federal/lei-8078-1990/art-49 · law://br/sp/birigui/lei/1234 · law://es/BOE-A-1978-31229
+  jurisdicao: string;     // "br" | "br/sp/birigui" | "es" | "es/an" | "us/ca" …
+  tipo: string;           // lei, decreto, portaria, resolução, decreto…
+  titulo: string;
+  numero?: string;
+  data?: string;          // ISO; data real (pré-1970 vem do frontmatter, não do commit)
+  situacao?: "vigente" | "revogada" | "desconhecida";
+  fonte: string;          // URL oficial
+  texto: string;          // Markdown
+  origem: { repo: string; caminho: string; commit?: string };
+};
 ```
 
-**Escolhas propostas (a validar com o time):**
-- **SDK:** `@modelcontextprotocol/sdk` em TypeScript, que encaixa na base atual do repo.
-- **Transportes:** `stdio` para rodar local no Claude Desktop e Code. `Streamable HTTP` se a demo for remota.
-- **Dados:** **não** clonar o ctresb inteiro (134 GB). Usar `git clone --filter=blob:none` com sparse-checkout só das pastas da demo (ex.: `constituicao.md` e algumas leis federais), ou o legislacao-br, que é pequeno e granular por artigo.
-- **Índice:** SQLite com FTS5 sobre frontmatter e corpo, para a busca. O git fica para o histórico (`log`, `show`, `diff`, `blame`).
-- **Identificador:** um URI próprio (`lei://...`) mapeado para o caminho do arquivo. Avaliar usar URN LexML onde existir.
-- **Segurança:** servidor **somente leitura**, validação dos parâmetros (nada de path traversal no caminho da norma), limite de tamanho nas respostas, `fonte` e aviso de "não substitui o Diário Oficial" em toda resposta.
+Adicionar um país ou município = escrever **um adaptador** (frontmatter da fonte → `Norma`).
 
-**Esboço das tools (contratos):**
+## 6. Superfície MCP (proposta)
 
-| Tool | Entrada | Saída |
+**Tools**
+| Tool | O que faz | Prioridade |
 |---|---|---|
-| `buscar_normas` | `consulta`, `esfera?`, `tipo?`, `ano?`, `limite?` | lista de `{uri, titulo, ementa, situacao}` |
-| `ler_artigo` | `uri`, `data?` | texto, vigência, fonte, commit |
-| `historico_artigo` | `uri` | lista de `{data, norma_alteradora, commit}` |
-| `diff_entre_datas` | `uri`, `de`, `ate` | diff unificado e normas responsáveis |
-| `quem_alterou` | `uri`, `trecho` | norma e commit que introduziram o trecho |
-| `verificar_citacoes` | `texto` | relatório por citação |
+| `listar_jurisdicoes` | Árvore de jurisdições e tipos disponíveis | P0 |
+| `buscar_normas` | Busca textual com filtros (jurisdição, tipo, ano) | P0 |
+| `ler_norma` | Texto por URI (norma ou artigo), com fonte e vigência | P0 |
+| `verificar_citacoes` | Recebe um texto e marca cada citação como ok, revogada, inexistente ou divergente | P0 (diferencial) |
+| `adicionar_norma` | Salva uma norma nova (Markdown + frontmatter) e cria um commit, para normas próprias de escritórios e empresas | P1 |
+| `historico_norma` | `git log` da norma ou artigo (quem mudou e quando) | P1 |
 
-## 7. Recomendação de MVP para o hackathon
+**Resources:** `law://{jurisdicao}/{id}[/art-N]`
+**Prompts:** `responder_com_citacao` (B2B/advogado) e `explicar_para_cidadao` (B2C, linguagem simples + aviso)
 
-**Recomendação (não decidida): A + B, com uma pitada de C.**
+**Regras:** somente leitura, exceto `adicionar_norma`. Validar a URI (sem path traversal). Limitar o tamanho das respostas. Todo retorno leva `fonte` e o aviso "não substitui o diário oficial nem aconselhamento jurídico".
 
-1. **LexMCP** com 4 tools (`buscar_normas`, `ler_artigo`, `historico_artigo`, `diff_entre_datas`) sobre um recorte pequeno: CF/88, CDC, CLT e LGPD.
-2. **Verificador de citações** como "killer feature" da demo: colar uma resposta de IA com um artigo inventado e mostrar o LexMCP apontando o erro.
-3. **Integração com outro MCP** (ex.: GitHub ou Slack) para mostrar composição: "abra uma issue com as mudanças da CLT desde janeiro".
+## 7. Arquitetura (3h, stdio)
 
-**Roteiro de demo (cerca de 3 min):**
-1. O problema: um LLM inventando um artigo de lei.
-2. O mesmo pedido com o LexMCP ligado: resposta com fonte e commit.
-3. "Como era esse artigo em 2017?" seguido de um diff da Reforma Trabalhista.
-4. O verificador marcando a citação falsa.
-5. Composição: o radar gera uma issue ou mensagem automaticamente.
+```
+Claude Desktop · Cursor · OpenBot ──stdio──▶ LawMCP (TS, @modelcontextprotocol/sdk)
+                                               ├─ tools / resources / prompts
+                                               ├─ índice em memória (busca)
+                                               └─ adaptadores ─▶ data/ (sparse clones + normas adicionadas)
+```
 
-**Divisão sugerida (4 pessoas):**
-- Dados: clone parcial, parser do frontmatter e índice SQLite.
-- Servidor MCP: tools, resources, validação e testes.
-- Verificador de citações: regex de citação, normalização e comparação.
-- Demo, pitch e integração com outro MCP.
+- **Busca:** índice em memória na carga (simples e suficiente para a demo). SQLite FTS5 fica para depois.
+- **Setup:** `npm run data:fetch` faz os sparse clones. `npm run mcp` sobe o stdio.
+- **Integração:** um snippet `mcpServers` pronto no README para Claude Desktop, Cursor e OpenBot. Testar com o MCP Inspector.
 
-## 8. Riscos e perguntas em aberto
+## 8. Divisão de tarefas (3 devs + agentes)
 
-**Perguntas para o time / organização:**
-- Quais são as regras e os critérios de avaliação do hackathon? Exige um cliente próprio ou um servidor MCP basta?
-- Qual é o prazo e quantas pessoas há no time?
-- Haverá MCPs ou APIs de patrocinadores que precisamos integrar?
-- Demo local (stdio) ou hospedada (HTTP)?
-- Qual fonte de dados usar: legislacao-br (por artigo, pequeno), ctresb (amplo, pesado) ou um mix?
+| Quem | Entrega |
+|---|---|
+| **Dev 1: MCP** | Servidor stdio, tools P0 com schemas (zod), resources, prompts, testes com o MCP Inspector |
+| **Dev 2: Back/dados** | Adaptadores (legislacao-br, ctresb Birigui, legalize-es), índice de busca, `verificar_citacoes`, `adicionar_norma` |
+| **Dev 3: Infra/front/pitch** | `data:fetch` (sparse clone), scripts npm, configs dos clientes MCP, página mínima (o que é e como plugar), roteiro e ensaio da demo |
 
-**Riscos técnicos:**
-- **Tamanho:** o ctresb é inviável de clonar inteiro. É preciso um recorte.
-- **Qualidade:** o OCR e as conversões automáticas têm erros. É preciso exibir sempre a fonte oficial.
-- **Datas antes de 1970:** o git não as representa, então a data real fica no frontmatter e na mensagem do commit. As tools devem ler a data dali, não do commit.
-- **Granularidade:** sem um arquivo por artigo (ctresb, legalize-br), o "histórico de um artigo" exige parsear a norma inteira.
-- **Responsabilidade:** não é aconselhamento jurídico. Mostrar o aviso sempre.
-- **Licença:** os textos são atos oficiais e os scripts têm licenças variadas (MIT, BSD-3, CC0). Citar e respeitar as licenças.
+**Cronograma**
+- 0:00–0:20: congelar o contrato (`Norma`, URIs, schemas das tools) em `src/types.ts`.
+- 0:20–2:00: desenvolvimento em paralelo.
+- 2:00–2:30: integração ponta a ponta no Claude Desktop.
+- 2:30–3:00: correções, ensaio e pitch.
 
-## 9. Fontes
+## 9. Roteiro de demo (3 min)
 
-Pesquisa feita em 2026-11-19, a partir dos READMEs e páginas do GitHub. Nenhum repositório foi clonado ou auditado.
+1. O problema: o assistente sem MCP inventa um artigo de lei.
+2. Plugamos o LawMCP e repetimos a pergunta: a resposta vem com o artigo, a fonte e a vigência.
+3. Uma mesma pergunta em **três jurisdições** (federal, Birigui e Espanha) prova que funciona para qualquer lugar.
+4. `verificar_citacoes` pega uma citação falsa num parecer gerado por IA.
+5. `adicionar_norma`: o escritório adiciona uma norma interna e ela já aparece na busca, com commit.
+6. Fechamento: "plugue em qualquer agente". Mostrar o mesmo servidor no Cursor ou no OpenBot.
 
-- https://github.com/ctresb/leis
-- https://github.com/danalec/legalize-br
-- https://github.com/Evaldoes/legislacao-br
-- https://github.com/LawCodex/br
-- https://github.com/lexifina/global-law
-- https://github.com/legalize-dev/legalize-es
-- https://github.com/Legilibre/Archeo-Lex
-- https://github.com/bundestag/gesetze
-- https://github.com/Kohei-Wada/houritsu
-- https://github.com/indiavotes/india-law
-- https://github.com/DCCouncil
-- https://github.com/OpenTermsArchive/contrib-versions
-- https://docs.opentermsarchive.org/navigate-history/
-- https://stefanwehrmeyer.com/blog/2012/08/07/bundesgit/
-- https://www.xataka.com/aplicaciones/alguien-ha-cogido-12-000-leyes-espanolas-ha-pasado-a-codigo-fuente-autentica-joya-para-buscar-legislacion
+## 10. Em aberto
+
+- Município da demo: **Birigui (recomendado)** ou outro com leis ordinárias no ctresb.
+- OpenBot: confirmar qual cliente é e se ele suporta MCP via stdio.
+- Critérios de avaliação do hackathon e MCPs ou APIs de patrocinadores.
+- Modelo de negócio (pitch): B2C gratuito; B2B por assinatura com normas privadas, SLA e jurisdições extras.

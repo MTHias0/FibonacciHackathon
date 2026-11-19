@@ -4,7 +4,9 @@
 
 - Antes de trabalhar, leia `CONTEXTO.md` e estas instruções.
 - Atue como desenvolvedor sênior: priorize o valor do negócio e a entrega de um sistema simples e completo.
-- O projeto está na preparação, com uma base TypeScript autorizada pelo usuário. Aguarde o contexto do negócio antes de implementar funcionalidades ou escolher frameworks.
+- O projeto está na preparação, com uma base TypeScript autorizada pelo usuário. Aguarde a aprovação do escopo antes de implementar funcionalidades ou escolher frameworks.
+- O tema central do hackathon é integração via **MCP (Model Context Protocol)**. Pense as soluções como servidores e clientes MCP (tools, resources e prompts) desde o início.
+- As ideias em discussão, o panorama e a arquitetura proposta estão em `docs/IDEIAS-MCP.md`. Trate esse documento como brainstorm: só o que estiver confirmado em `CONTEXTO.md` é decisão.
 - Registre em `CONTEXTO.md` os fatos recebidos, as decisões confirmadas, as dúvidas e o próximo passo. Diferencie fatos de hipóteses.
 - Atualize o contexto após decisões e alterações relevantes, para permitir a retomada sem depender do histórico da conversa.
 - Não registre credenciais, tokens ou outros segredos.

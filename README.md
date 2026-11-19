@@ -1,7 +1,13 @@
 # FibonacciHackathon
 
 Base TypeScript com Node.js 24 ou superior, módulos ESM e verificação estrita de tipos.
-O escopo do negócio ainda será definido.
+O tema central do hackathon é **integração via MCP (Model Context Protocol)**.
+A ideia em discussão é expor a legislação brasileira versionada em git
+(ex.: [ctresb/leis](https://github.com/ctresb/leis)) como servidor MCP.
+O escopo final ainda será decidido pelo time.
+
+**Comece por [docs/IDEIAS-MCP.md](docs/IDEIAS-MCP.md):** o panorama, as ideias de produto,
+a arquitetura MCP proposta, o MVP recomendado e as perguntas em aberto.
 
 ## Preparação
 

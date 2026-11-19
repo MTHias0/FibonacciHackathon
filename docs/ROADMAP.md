@@ -29,9 +29,11 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
 ## Dev 1: MCP e integração com clientes
 
 **Agora**
-- [ ] Instalar e configurar o Claude Desktop com o LawMCP atual (config no README) e rodar as perguntas de teste. Anotar onde a IA escolheu a tool errada.
+- [x] Instalar e configurar o Claude Desktop com o LawMCP atual (config no README) e rodar as perguntas de teste. Anotar onde a IA escolheu a tool errada.
+  - Feito em 2026-11-19 com o MCP v1: as 4 perguntas do README responderam com texto, fonte e vigência. Na 1ª rodada, depois de marcar o "art. 999 do CDC" como inexistente, a IA citou o art. 42 de memória sem chamar `ler_norma`. Na 2ª rodada conferiu na base. Ponto para a revisão das descrições.
 - [ ] Descobrir o que é exatamente o "OpenBot" que vamos usar e se ele aceita servidor MCP via **stdio**. Se só aceitar HTTP, avisar o time na hora: isso muda a infra.
 - [ ] Testar o servidor no MCP Inspector (`npx @modelcontextprotocol/inspector node src/server.ts`) e no Cursor.
+  - Parcial: o Inspector em modo CLI (`--cli`) listou as tools e respondeu a `ler_norma`. Faltam a interface web do Inspector e o Cursor (não instalado).
 - [ ] Escrever o roteiro de demo em `docs/DEMO.md`: 5 perguntas, a tool que cada uma deve acionar e a resposta esperada.
 
 **Depois do MCP v2**

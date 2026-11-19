@@ -8,13 +8,14 @@ Esta pasta explica o que ele faz, como funciona por dentro e como usar, estender
 
 | Quero… | Leia |
 |---|---|
+| **Instalar e ligar no Claude Desktop, Claude Code ou Cursor** | **[Guia de instalação](INSTALACAO.md)** |
 | Entender o produto, o problema e o pitch | [01. Visão geral](01-visao-geral.md) |
 | Entender o código e como as peças se ligam | [02. Arquitetura](02-arquitetura.md) |
 | Saber o que cada tool recebe e devolve | [03. Referência MCP](03-referencia-mcp.md) |
 | Saber de onde vêm as leis e como atualizar | [04. Dados e fontes](04-dados-e-fontes.md) |
 | Adicionar município, país ou normas da empresa | [05. Jurisdições próprias](05-jurisdicoes-proprias.md) |
 | Entender o verificador de citações | [06. Verificador de citações](06-verificador-de-citacoes.md) |
-| Plugar no Claude Desktop, Cursor ou Inspector | [07. Clientes e demo](07-clientes-e-demo.md) |
+| Ver em quais clientes já foi testado e perguntas extras de demo | [07. Clientes e demo](07-clientes-e-demo.md) |
 | Fazer a demo no palco (roteiro de 3 min) | [DEMO.md](DEMO.md) |
 | Rodar e escrever testes | [08. Testes e qualidade](08-testes-e-qualidade.md) |
 | Saber por que foi feito assim e o que ainda falta | [09. Decisões e limitações](09-decisoes-e-limitacoes.md) |

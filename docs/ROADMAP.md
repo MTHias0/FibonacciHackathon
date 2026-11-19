@@ -32,12 +32,18 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
 - [x] Instalar e configurar o Claude Desktop com o LawMCP atual (config no README) e rodar as perguntas de teste. Anotar onde a IA escolheu a tool errada.
   - Feito em 2026-11-19 com o MCP v1: as 4 perguntas do README responderam com texto, fonte e vigência. Na 1ª rodada, depois de marcar o "art. 999 do CDC" como inexistente, a IA citou o art. 42 de memória sem chamar `ler_norma`. Na 2ª rodada conferiu na base. Ponto para a revisão das descrições.
 - [ ] Descobrir o que é exatamente o "OpenBot" que vamos usar e se ele aceita servidor MCP via **stdio**. Se só aceitar HTTP, avisar o time na hora: isso muda a infra.
-- [ ] Testar o servidor no MCP Inspector (`npx @modelcontextprotocol/inspector node src/server.ts`) e no Cursor.
-  - Parcial: o Inspector em modo CLI (`--cli`) listou as tools e respondeu a `ler_norma`. Faltam a interface web do Inspector e o Cursor (não instalado).
+- [x] Testar o servidor no MCP Inspector (`npx @modelcontextprotocol/inspector node src/server.ts`).
+  - Inspector feito em 2026-11-19, depois do commit `27bd02d`:
+    - Interface web: conectou e `ler_norma` do art. 49 do CDC trouxe texto, fonte, vigência e permalink.
+    - Modo CLI: 9 tools, 704 resources e 4 prompts. Rodei 17 chamadas, cobrindo todas as tools, e todas responderam. As que gravam (`adicionar_norma`, `importar_normas`) usaram `LAWMCP_LOCAL` numa pasta temporária, com commits, nova versão e reimportação sem mudanças. Entradas inválidas (`../hack`, pasta inexistente, `law://../../etc/passwd`) foram recusadas.
+  - Erro: `comparar_jurisdicoes` com "igualdade perante a lei" não traz o art. 5º da CF no Brasil. Vêm Licitações art. 80, Propriedade Industrial art. 4º e Liberdade Econômica art. 2º. A pergunta de demo correspondente vai falhar.
+  - Cosmético:
+    - O `texto` traz âncoras HTML (`<a id="par-unico"></a>`).
+    - Um arquivo importado sem frontmatter recebe como título o nome do arquivo ("reembolso").
 - [ ] Escrever o roteiro de demo em `docs/DEMO.md`: 5 perguntas, a tool que cada uma deve acionar e a resposta esperada.
 
 **Depois do MCP v2**
-- [ ] Repetir o roteiro de demo no Claude Desktop e no segundo cliente (OpenBot ou Cursor).
+- [ ] Repetir o roteiro de demo no Claude Desktop e no OpenBot.
 - [ ] Revisar as descrições das tools: se a IA escolhe a tool errada, a descrição está ruim.
 - [ ] Gravar um vídeo curto da demo funcionando, como plano B para o palco.
 

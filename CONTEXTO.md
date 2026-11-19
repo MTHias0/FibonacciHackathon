@@ -7,6 +7,7 @@
   - Fontes oficiais novas se registram em `data/snapshot/fontes.json`, sem código, nos formatos `ctresb` ou `markdown`. O Birigui saiu do código e foi para lá.
   - `importar_normas` transforma uma pasta de Markdown em `local/<org>`, num commit.
   - `historico_norma` mostra as versões das normas locais a partir do git, com os artigos incluídos, alterados e removidos.
+  - O git das normas locais ignora `GIT_DIR`, `GIT_INDEX_FILE` e afins herdados do processo (`envGit` em `src/dados/adaptadores.ts`). Sem isso, um hook de pre-push rodando `npm test` commitava as normas de teste no repositório do projeto. O teste simula o hook.
 - Base: 15.162 documentos (normas e artigos), sendo 11.956 de br/federal (43 normas: CF, CDC, CLT, ECA, Inquilinato, 17 códigos e 21 leis-chave), 654 de br/sp/birigui e 2.552 de es. Cada um com permalink no commit exato da fonte (`data/snapshot/manifest.json`).
 - Verificado: `npm test` (18 testes, incluindo um ponta a ponta via stdio, `adicionar_norma` e `importar_normas` com git e `fontes.json`), `typecheck`, `build` e `initialize` do servidor compilado. Carga do índice: cerca de 3 s com cache de disco e 9 a 14 s a frio; o stdio conecta antes e as tools esperam a carga. Heap: cerca de 112 MB (com os trechos por dispositivo dos artigos longos, que corrigiram "igualdade perante a lei" sem o art. 5º da CF).
 - Testado no MCP Inspector (web e CLI) e no Claude Desktop com o MCP v1. **Falta ensaiar o `docs/DEMO.md` no Claude Desktop com a versão atual, o Cursor e o OpenBot.**

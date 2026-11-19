@@ -189,11 +189,18 @@ export const legalizeEs: Adaptador = {
   },
 };
 
+/**
+ * Ambiente sem as variáveis que um hook do git exporta (GIT_DIR, GIT_INDEX_FILE…). Com elas, o git ignora o cwd
+ * e lê ou commita no repositório de quem chamou: um pre-push rodando npm test commitava normas de teste no projeto.
+ */
+export const envGit = (): NodeJS.ProcessEnv => Object.fromEntries(Object.entries(process.env)
+  .filter(([k]) => !/^GIT_(DIR|WORK_TREE|INDEX_FILE|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|COMMON_DIR|NAMESPACE|PREFIX)$/.test(k)));
+
 /** Commit atual de um repositório git local, se houver. */
 function commitAtual(dir: string): string | undefined {
   if (!existsSync(join(dir, ".git"))) return undefined;
   try {
-    return execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+    return execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir, env: envGit(), stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
   } catch {
     return undefined;
   }

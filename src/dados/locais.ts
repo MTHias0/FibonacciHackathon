@@ -5,7 +5,7 @@ import { homedir } from "node:os";
 import { basename, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { stringify } from "yaml";
 import type { AdicionarNormaEntrada, ImportarNormasEntrada, VersaoNorma } from "../types.ts";
-import { arquivosMd } from "./adaptadores.ts";
+import { arquivosMd, envGit } from "./adaptadores.ts";
 import { lerFrontmatter, texto } from "./frontmatter.ts";
 import { dividirArtigos, slug, tituloDoCorpo } from "./texto.ts";
 
@@ -17,7 +17,7 @@ const MAX_VERSOES = 50;
 
 const git = (dir: string, ...args: string[]) =>
   execFileSync("git", ["-c", "user.name=LawMCP", "-c", "user.email=lawmcp@local", "-c", "commit.gpgsign=false", ...args], {
-    cwd: dir, stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024,
+    cwd: dir, env: envGit(), stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024,
   }).toString().trim();
 
 const head = (raiz: string) => { try { return git(raiz, "rev-parse", "HEAD"); } catch { return ""; } };

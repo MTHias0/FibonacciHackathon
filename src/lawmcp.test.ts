@@ -7,6 +7,7 @@ import { after, test } from "node:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { verificarCitacoes } from "./citacoes.ts";
+import { envGit } from "./dados/adaptadores.ts";
 import { Indice } from "./dados/indice.ts";
 import { dividirArtigos, dividirDispositivos, referenciaAto } from "./dados/texto.ts";
 import { criarServidor, DIR_SNAPSHOT } from "./server.ts";
@@ -15,6 +16,8 @@ const indice = await Indice.carregar(DIR_SNAPSHOT);
 const verificar = (texto: string, jurisdicao?: string) =>
   verificarCitacoes(indice, { texto, ...(jurisdicao ? { jurisdicao } : {}) }).citacoes.map((c) => `${c.status} ${c.uri ?? ""}`.trim());
 const temp = mkdtempSync(join(tmpdir(), "lawmcp-"));
+// Simula um hook do git (pre-push rodando npm test): o LawMCP deve ignorar o GIT_DIR herdado e commitar só no repositório local.
+process.env.GIT_DIR = join(temp, "git-dir-do-hook-inexistente");
 after(() => rmSync(temp, { recursive: true, force: true }));
 
 // ---- Utilitários de texto ----
@@ -246,7 +249,7 @@ test("MCP: adicionar_norma grava em git local, indexa e versiona", async () => {
     assert.equal(v2.novaVersao, true);
     assert.match((await chamar("ler_norma", { uri: `${v1.uri}/art-1` })).texto, /três vezes/);
     assert.equal((await chamar("ler_norma", { uri: `${v1.uri}/art-2` })).erro, true, "artigo removido na versão 2");
-    const log = execFileSync("git", ["log", "--format=%s"], { cwd: temp }).toString();
+    const log = execFileSync("git", ["log", "--format=%s"], { cwd: temp, env: envGit() }).toString();
     assert.match(log, /Atualiza Política de Home Office\nAdiciona Política de Home Office/);
     const h = (await chamar("historico_norma", { uri: v1.uri })).json();
     assert.deepEqual(h.versoes.map((v: { commit: string; alterados: string[]; removidos: string[] }) => [v.commit, v.alterados, v.removidos]),

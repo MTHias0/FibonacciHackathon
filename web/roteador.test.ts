@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { rotear } from "./roteador.ts";
+import { comContexto, rotear } from "./roteador.ts";
+
+test("roteador: \"e no Brasil?\" herda o assunto da pergunta anterior, com a jurisdição nova", () => {
+  const anteriores = ["Quais leis falam sobre maioridade penal na Espanha?"];
+  assert.equal(comContexto("e no brasil?", anteriores), "Quais leis falam sobre maioridade penal no brasil?");
+  assert.deepEqual(rotear(comContexto("no Brasil", anteriores)).args, { consulta: "maioridade penal", limite: 8, jurisdicao: "br" });
+  // Encadeia: a continuação anterior não tem assunto, então vale a pergunta antes dela.
+  assert.equal(comContexto("e em Birigui?", [...anteriores, "e no brasil?"]), "Quais leis falam sobre maioridade penal em Birigui?");
+  assert.equal(rotear(comContexto("E se for na España?", ["posso ser demitido sem motivo no Brasil"])).args.jurisdicao, "es");
+  // Pergunta com assunto próprio ou sem histórico não muda.
+  assert.equal(comContexto("IPTU em Birigui", anteriores), "IPTU em Birigui");
+  assert.equal(comContexto("no brasil"), "no brasil");
+});
 
 test("roteador: perguntas da demo caem na tool certa", () => {
   assert.deepEqual(rotear("O art. 49 do CDC ainda vale? Cite a fonte."), { tool: "verificar_citacoes", args: { texto: "O art. 49 do CDC ainda vale? Cite a fonte." }, depois: "ler_norma" });

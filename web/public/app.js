@@ -312,6 +312,8 @@ async function enviar(texto, modoEnvio = modo) {
   }
   const conversa = conversaAtual();
   const jurisdicao = FILTRA.has(modoEnvio) ? filtro.value : "";
+  // Últimas perguntas da conversa: "e no Brasil?" herda o assunto delas no servidor.
+  const anteriores = conversa.itens.filter((i) => i.usuario !== undefined).slice(-3).map((i) => i.usuario);
   conversa.itens.push({ usuario: texto, modo: modoEnvio, ...(jurisdicao ? { jurisdicao } : {}) });
   listarConversas();
   mudarTela(false);
@@ -321,7 +323,7 @@ async function enviar(texto, modoEnvio = modo) {
   fluxo.classList.remove("feito");
   fluxo.classList.add("ativo");
   try {
-    const { passos, traducao } = await api("/api/chat", { texto, modo: modoEnvio, jurisdicao });
+    const { passos, traducao } = await api("/api/chat", { texto, modo: modoEnvio, jurisdicao, anteriores });
     conversa.itens.push({ passos, traducao });
     resposta.innerHTML = renderResposta(passos, traducao);
     if (traducao) registrar({ tool: `ollama · ${nomeModelo(traducao.modelo)}`, args: { pergunta: traducao.de }, resultado: { consulta: traducao.para, modelo: traducao.modelo }, ms: traducao.ms });

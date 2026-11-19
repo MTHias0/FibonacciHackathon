@@ -11,7 +11,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { MODOS, rotear, type Modo } from "./roteador.ts";
+import { comContexto, MODOS, rotear, type Modo } from "./roteador.ts";
 import { aquecer, disponivel, MODELO, traduzir, type Traducao } from "./tradutor.ts";
 
 const PORTA = Number(process.env.PORT ?? 5173);
@@ -40,7 +40,8 @@ async function chamar(tool: string, args: Record<string, unknown>): Promise<Pass
   try { return { tool, args, ms, resultado: JSON.parse(texto) }; } catch { return { tool, args, ms, resultado: texto }; }
 }
 
-async function chat(texto: string, modo: Modo, jurisdicao?: string): Promise<{ passos: Passo[]; traducao?: Traducao }> {
+async function chat(texto: string, modo: Modo, jurisdicao?: string, anteriores: string[] = []): Promise<{ passos: Passo[]; traducao?: Traducao }> {
+  texto = comContexto(texto, anteriores);
   const plano = rotear(texto, modo, jurisdicao);
   // Busca em linguagem leiga: o modelo local reescreve no vocabulário da lei. Sem resultado, volta para as regras.
   if (plano.tool === "buscar_normas") {
@@ -99,10 +100,11 @@ createServer(async (req, res) => {
       return enviar(res, 200, await chamar(nome, (args && typeof args === "object" ? args : {}) as Record<string, unknown>));
     }
     if (req.method === "POST" && pathname === "/api/chat") {
-      const { texto, modo, jurisdicao } = await lerJson(req);
+      const { texto, modo, jurisdicao, anteriores } = await lerJson(req);
       if (typeof texto !== "string" || !texto.trim() || texto.length > 50_000) return enviar(res, 400, { erro: "Escreva uma pergunta ou cole um texto" });
       const filtro = typeof jurisdicao === "string" && JURISDICAO.test(jurisdicao) ? jurisdicao : undefined;
-      return enviar(res, 200, await chat(texto, MODOS.includes(modo as Modo) ? modo as Modo : "auto", filtro));
+      const historico = Array.isArray(anteriores) ? anteriores.filter((a): a is string => typeof a === "string").slice(-3) : [];
+      return enviar(res, 200, await chat(texto, MODOS.includes(modo as Modo) ? modo as Modo : "auto", filtro, historico));
     }
     if (req.method === "GET") return estatico(pathname, res);
     enviar(res, 405, { erro: "Método não suportado" });

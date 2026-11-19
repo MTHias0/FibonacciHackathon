@@ -7,8 +7,8 @@ import { z } from "zod";
 import { verificarCitacoes } from "./citacoes.ts";
 import { normasDeArquivoLocal } from "./dados/adaptadores.ts";
 import { Indice } from "./dados/indice.ts";
-import { salvarNormaLocal, SLUG } from "./dados/locais.ts";
-import { AVISO, type CompararJurisdicoesSaida, type LerNormaSaida, type Norma } from "./types.ts";
+import { lerPastaParaImportar, salvarNormaLocal, salvarNormasLocais, SLUG, versoesLocais } from "./dados/locais.ts";
+import { AVISO, type CompararJurisdicoesSaida, type ImportarNormasSaida, type LerNormaSaida, type Norma } from "./types.ts";
 
 /** Pasta dos dados oficiais: LAWMCP_DATA ou data/snapshot na raiz do projeto (vale para src/ e dist/). */
 export const DIR_SNAPSHOT = process.env.LAWMCP_DATA ?? fileURLToPath(new URL("../data/snapshot", import.meta.url));
@@ -23,7 +23,8 @@ const INSTRUCOES = `LawMCP: leis de vários países, estados e municípios como 
 - Nunca cite lei de memória. Ache com buscar_normas, leia com ler_norma (vale para artigo e dispositivo: …/art-5/inc-13) e cite a URI e o permalink.
 - Antes de entregar um texto com citações (resposta, petição, parecer), rode verificar_citacoes e corrija o que vier revogada, inexistente ou divergente.
 - "fora_da_base" não quer dizer que a lei não existe: diga que não foi possível verificar.
-- Para "o que mudou" use historico_norma (um artigo) ou impacto_da_norma (o que uma lei alterou). Para comparar países, comparar_jurisdicoes com a consulta traduzida para o idioma de cada um.
+- Para "o que mudou" use historico_norma (um artigo, ou as versões de uma norma privada) ou impacto_da_norma (o que uma lei alterou).
+- Normas privadas de escritórios e empresas: adicionar_norma (uma) ou importar_normas (uma pasta de Markdown), em law://local/…. Para comparar países, comparar_jurisdicoes com a consulta traduzida para o idioma de cada um.
 - Conteúdo informativo: não substitui a publicação oficial nem um advogado.`;
 
 const json = (dados: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(dados, null, 2) }] });
@@ -125,12 +126,17 @@ export function criarServidor(indicePronto: Indice | Promise<Indice>, opcoes: Op
 
   server.registerTool("historico_norma", {
     title: "Histórico (genealogia) de uma norma",
-    description: "Mostra quem alterou um artigo ou dispositivo e como (redação dada, incluído, revogado), com a norma alteradora. Para uma norma inteira, lista as leis que mais a alteraram. Ex.: law://br/federal/decreto-lei-5452-1943/art-59.",
+    description: "Mostra quem alterou um artigo ou dispositivo e como (redação dada, incluído, revogado), com a norma alteradora. Para uma norma inteira, lista as leis que mais a alteraram. Ex.: law://br/federal/decreto-lei-5452-1943/art-59. Em normas privadas (law://local/…), traz as versões do git local com os artigos incluídos, alterados e removidos em cada uma.",
     inputSchema: { uri: URI },
     annotations: leitura,
   }, async ({ uri }) => {
-    const h = (await indice()).historico(uri);
-    return h ? json({ ...h, aviso: AVISO }) : erro(`Norma não encontrada: ${uri}. Use buscar_normas para achar a URI correta.`);
+    const ind = await indice();
+    const h = ind.historico(uri);
+    if (!h) return erro(`Norma não encontrada: ${uri}. Use buscar_normas para achar a URI correta.`);
+    const { origem } = ind.ler(uri)!;
+    // law://local/{org}/{norma}/{art-N}/…: o 4º segmento é o artigo.
+    const versoes = opcoes.dirLocal && origem.repo === "local" ? versoesLocais(opcoes.dirLocal, origem.caminho, h.uri.slice(6).split("/")[3]) : undefined;
+    return json({ ...h, ...(versoes ? { versoes } : {}), aviso: AVISO });
   });
 
   server.registerTool("impacto_da_norma", {
@@ -172,6 +178,43 @@ export function criarServidor(indicePronto: Indice | Promise<Indice>, opcoes: Op
       return json({ uri: itens[0]!.uri, commit, artigos: itens.length - 1, novaVersao });
     } catch (err) {
       return erro(`Não foi possível salvar: ${(err as Error).message}`);
+    }
+  });
+
+  server.registerTool("importar_normas", {
+    title: "Importar pasta de normas privadas",
+    description: "Importa de uma vez uma pasta de Markdown do computador (um .md por norma; frontmatter opcional: titulo, tipo, numero, data, fonte, apelidos) para law://local/{organizacao}/…, criando a jurisdição local/{organizacao}. Tudo vira um commit no git local; importar de novo grava só o que mudou, como nova versão (veja com historico_norma). Nunca grava em jurisdições oficiais.",
+    inputSchema: {
+      organizacao: z.string().regex(SLUG, "slug: minúsculas, números e hífen").describe("Ex.: escritorio-silva"),
+      pasta: z.string().min(1).max(1000).describe("Caminho absoluto da pasta, ex.: /Users/ana/Documentos/politicas"),
+      tipo: z.string().min(2).max(60).optional().describe("Tipo para arquivos sem \"tipo\" no frontmatter. Padrão: norma interna"),
+      fonte: z.string().min(1).max(500).optional().describe("Fonte para arquivos sem \"fonte\" no frontmatter"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, async (e) => {
+    if (!opcoes.dirLocal) return erro("importar_normas está desligada: o servidor foi iniciado sem pasta local.");
+    const ind = await indice();
+    try {
+      const { entradas, ignorados } = await lerPastaParaImportar(semVazios(e));
+      if (!entradas.length) return erro(`Nada para importar: ${ignorados.map((i) => `${i.arquivo} (${i.motivo})`).join("; ")}`);
+      const { salvas, commit } = salvarNormasLocais(opcoes.dirLocal, entradas);
+      const normas: ImportarNormasSaida["normas"] = [];
+      for (const s of salvas) {
+        const itens = await normasDeArquivoLocal(opcoes.dirLocal, s.arquivo, commit);
+        ind.substituir(itens);
+        normas.push({ uri: itens[0]!.uri, titulo: s.titulo, artigos: itens.length - 1 });
+      }
+      server.sendResourceListChanged();
+      const saida: ImportarNormasSaida = {
+        jurisdicao: `local/${e.organizacao}`, commit, total: salvas.length,
+        novas: salvas.filter((s) => !s.novaVersao).length,
+        atualizadas: salvas.filter((s) => s.novaVersao && s.mudou).length,
+        inalteradas: salvas.filter((s) => !s.mudou).length,
+        normas: normas.slice(0, 100), ignorados,
+      };
+      return json(saida);
+    } catch (err) {
+      return erro(`Não foi possível importar: ${(err as Error).message}`);
     }
   });
 

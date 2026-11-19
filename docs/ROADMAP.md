@@ -50,7 +50,7 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
 
 **Depois do MCP v2**
 - [ ] Transformar `CASOS-DE-TESTE.md` em testes no `src/lawmcp.test.ts` (toda tool nova precisa de teste).
-- [ ] Se sobrar tempo, escrever o adaptador da fonte candidata escolhida (novo item em `FONTES`, em `src/dados/adaptadores.ts`).
+- [ ] Se sobrar tempo, adicionar a fonte candidata: se for ctresb ou Markdown simples, é só uma entrada em `data/snapshot/fontes.json` e `npm run data:fetch -- <pasta>`; outro formato pede um adaptador novo em `FONTES` (`src/dados/adaptadores.ts`).
 
 ## Dev 3: front básico e pitch
 

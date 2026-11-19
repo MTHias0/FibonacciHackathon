@@ -8,6 +8,16 @@ export function normalizar(s: string): string {
   return s.normalize("NFD").replace(DIACRITICOS, "").toLowerCase();
 }
 
+/** "Política de Home Office" → "politica-de-home-office" (vira parte da URI). */
+export function slug(s: string): string {
+  return normalizar(s).replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").slice(0, 60).replace(/-+$/, "") || "norma";
+}
+
+/** Título do primeiro "# Título" do Markdown, se houver. */
+export function tituloDoCorpo(corpo: string): string | undefined {
+  return /^#\s+(.+?)\s*#*$/m.exec(corpo)?.[1] || undefined;
+}
+
 /** Como normalizar, mas com o mesmo tamanho do original, para recortar trechos pelas mesmas posições. */
 export function normalizarAlinhado(s: string): string {
   const n = normalizar(s);

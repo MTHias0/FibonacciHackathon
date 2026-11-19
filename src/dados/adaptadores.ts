@@ -1,17 +1,19 @@
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
-import { basename, join, relative, sep } from "node:path";
-import type { Adaptador, Alteracao, LawUri, Norma, Situacao } from "../types.ts";
+import { basename, join, posix, relative, sep } from "node:path";
+import { z } from "zod";
+import type { Adaptador, Alteracao, LawUri, Norma, Origem, Situacao } from "../types.ts";
 import { CATALOGO } from "./catalogo.ts";
 import { lerFrontmatter, texto } from "./frontmatter.ts";
-import { alteracaoDeNota, alteracoesInline, dividirArtigos, estaRevogado, referenciaAto } from "./texto.ts";
+import { alteracaoDeNota, alteracoesInline, dividirArtigos, estaRevogado, referenciaAto, slug, tituloDoCorpo } from "./texto.ts";
 
-/** Lista arquivos .md recursivamente, ignorando .git e arquivos de documentação. */
-async function arquivosMd(dir: string): Promise<string[]> {
+/** Lista arquivos .md recursivamente, ignorando pastas ocultas (.git…) e arquivos de documentação. */
+export async function arquivosMd(dir: string): Promise<string[]> {
   const entradas = await readdir(dir, { withFileTypes: true, recursive: true });
   return entradas
-    .filter((e) => e.isFile() && e.name.endsWith(".md") && !/^(README|FONTES|LEIAME)/i.test(e.name) && !e.parentPath.includes(`${sep}.git`))
+    .filter((e) => e.isFile() && e.name.endsWith(".md") && !/^(README|FONTES|LEIAME)/i.test(e.name) &&
+      !relative(dir, e.parentPath).split(sep).some((p) => p.startsWith(".")))
     .map((e) => join(e.parentPath, e.name))
     .sort();
 }
@@ -131,11 +133,11 @@ export const lawCodexBr: Adaptador = {
 
 /**
  * Município, a partir de ctresb/leis (textos oficiais): um arquivo por norma.
- * Para adicionar um município, registre outro ctresbMunicipio em FONTES.
+ * Para adicionar um município, registre em data/snapshot/fontes.json com formato "ctresb".
  */
-export function ctresbMunicipio(jurisdicao: string, caminhoNoRepo: string): Adaptador {
+export function ctresbMunicipio(jurisdicao: string, caminhoNoRepo: string, repo = "ctresb/leis"): Adaptador {
   return {
-    nome: "ctresb/leis",
+    nome: repo,
     jurisdicoes: [jurisdicao],
     async carregar(dir) {
       const normas: Norma[] = [];
@@ -150,7 +152,7 @@ export function ctresbMunicipio(jurisdicao: string, caminhoNoRepo: string): Adap
           titulo: texto(meta.titulo) ?? basename(arquivo, ".md"),
           ...(numero ? { numero } : {}), ...(data ? { data } : {}),
           situacao, fonte: texto(meta.fonte) ?? "", texto: corpo,
-          origem: { repo: "ctresb/leis", caminho: `${caminhoNoRepo}/${relative(dir, arquivo).split(sep).join("/")}` },
+          origem: { repo, caminho: posix.join(caminhoNoRepo, relative(dir, arquivo).split(sep).join("/")) },
         });
       }
       return normas;
@@ -197,23 +199,48 @@ function commitAtual(dir: string): string | undefined {
   }
 }
 
-/** Lê uma norma privada salva por adicionar_norma (data/local/<organizacao>/<slug>.md). */
-export async function normasDeArquivoLocal(dir: string, arquivo: string, commit?: string): Promise<Norma[]> {
+/**
+ * Uma norma em Markdown genérico, dividida em artigos. Frontmatter opcional: titulo, tipo, numero, data, fonte,
+ * apelidos, revogada (true/false). Sem titulo, vale o primeiro "# Título" e depois o nome do arquivo.
+ */
+async function normasDeMarkdown(arquivo: string, jurisdicao: string, origem: Origem, padrao: { tipo: string; situacao: Situacao }): Promise<Norma[]> {
   const { meta, corpo } = lerFrontmatter(await readFile(arquivo, "utf8"));
-  const rel = relative(dir, arquivo).split(sep).join("/");
-  const organizacao = rel.split("/")[0]!;
+  const titulo = texto(meta.titulo) ?? texto(meta.title) ?? tituloDoCorpo(corpo) ?? basename(arquivo, ".md");
   const numero = texto(meta.numero);
   const data = texto(meta.data);
-  const titulo = texto(meta.titulo) ?? basename(arquivo, ".md");
   const base: Norma = {
-    uri: `law://local/${organizacao}/${basename(arquivo, ".md")}`, jurisdicao: `local/${organizacao}`,
-    tipo: (texto(meta.tipo) ?? "norma interna").toLowerCase(), titulo,
+    uri: `law://${jurisdicao}/${slug(basename(arquivo, ".md"))}`, jurisdicao,
+    tipo: (texto(meta.tipo) ?? padrao.tipo).toLowerCase(), titulo,
     ...(numero ? { numero } : {}), ...(data ? { data } : {}),
-    situacao: "vigente", fonte: texto(meta.fonte) ?? "", texto: corpo,
+    situacao: meta.revogada === true ? "revogada" : meta.revogada === false ? "vigente" : padrao.situacao,
+    fonte: texto(meta.fonte) ?? "", texto: corpo,
     apelidos: [titulo, ...(Array.isArray(meta.apelidos) ? meta.apelidos.map(String) : [])],
-    origem: { repo: "local", caminho: rel, ...(commit ? { commit } : {}) },
+    origem,
   };
   return normaComArtigos(base, corpo, titulo, false);
+}
+
+/** Pasta de Markdown genérico (um .md por norma), registrada em fontes.json com formato "markdown". */
+export function pastaMarkdown(jurisdicao: string, caminhoNoRepo: string, repo?: string): Adaptador {
+  return {
+    nome: repo ?? "manual",
+    jurisdicoes: [jurisdicao],
+    async carregar(dir) {
+      const normas: Norma[] = [];
+      for (const arquivo of await arquivosMd(dir)) {
+        const caminho = posix.join(caminhoNoRepo, relative(dir, arquivo).split(sep).join("/"));
+        normas.push(...(await normasDeMarkdown(arquivo, jurisdicao, { repo: repo ?? "manual", caminho }, { tipo: "norma", situacao: "desconhecida" })));
+      }
+      return normas;
+    },
+  };
+}
+
+/** Lê uma norma privada salva por adicionar_norma ou importar_normas (data/local/<organizacao>/<slug>.md). */
+export async function normasDeArquivoLocal(dir: string, arquivo: string, commit?: string): Promise<Norma[]> {
+  const rel = relative(dir, arquivo).split(sep).join("/");
+  const origem: Origem = { repo: "local", caminho: rel, ...(commit ? { commit } : {}) };
+  return normasDeMarkdown(arquivo, `local/${rel.split("/")[0]!}`, origem, { tipo: "norma interna", situacao: "vigente" });
 }
 
 /** Normas privadas de escritórios e empresas (B2B), versionadas num repositório git próprio em data/local/. */
@@ -228,10 +255,45 @@ export const normasLocais: Adaptador = {
   },
 };
 
-/** Fontes oficiais carregadas pelo LawMCP: pasta do snapshot → adaptador. */
+/** Fontes oficiais com adaptador próprio: pasta do snapshot → adaptador. As demais vêm de fontes.json. */
 export const FONTES: { pasta: string; adaptador: Adaptador }[] = [
   { pasta: "br-federal", adaptador: legislacaoBr },
   { pasta: "br-federal-lawcodex", adaptador: lawCodexBr },
-  { pasta: "br-sp-birigui", adaptador: ctresbMunicipio("br/sp/birigui", "municipais/SP/birigui") },
   { pasta: "es", adaptador: legalizeEs },
 ];
+
+const FonteConfig = z.object({
+  pasta: z.string().regex(/^[a-z0-9][a-z0-9-]{0,59}$/, "slug"),
+  jurisdicao: z.string().regex(/^[a-z]{2,}(?:\/[a-z0-9-]+)*$/, "ex.: br/sp/campinas")
+    .refine((j) => !/^local(\/|$)/.test(j), "local/ é reservado para normas privadas"),
+  formato: z.enum(["ctresb", "markdown"]),
+  repo: z.string().regex(/^[\w.-]+\/[\w.-]+$/, "dono/repositorio do GitHub").optional(),
+  caminho: z.string().regex(/^(?!\/)(?!.*\.\.)[\w./-]+$/, "caminho relativo dentro do repo").default("."),
+  ignorar: z.string().optional(),
+});
+export type FonteConfig = z.infer<typeof FonteConfig>;
+
+/**
+ * Fontes registradas sem programar em <snapshot>/fontes.json. Formatos: "ctresb" (município do ctresb/leis) ou
+ * "markdown" (um .md por norma). Sem repo, os arquivos ficam direto em <snapshot>/<pasta>/.
+ */
+export function fontesConfiguradas(dirSnapshot: string): FonteConfig[] {
+  const arquivo = join(dirSnapshot, "fontes.json");
+  if (!existsSync(arquivo)) return [];
+  const r = z.object({ fontes: z.array(FonteConfig) }).safeParse(JSON.parse(readFileSync(arquivo, "utf8")));
+  if (!r.success) throw new Error(`${arquivo} inválido: ${r.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`);
+  const pastas = new Set(FONTES.map((f) => f.pasta));
+  for (const f of r.data.fontes) {
+    if (pastas.has(f.pasta)) throw new Error(`${arquivo}: pasta "${f.pasta}" repetida.`);
+    pastas.add(f.pasta);
+  }
+  return r.data.fontes;
+}
+
+/** FONTES de código mais as de fontes.json. */
+export function todasAsFontes(dirSnapshot: string): { pasta: string; adaptador: Adaptador }[] {
+  return [...FONTES, ...fontesConfiguradas(dirSnapshot).map((f) => ({
+    pasta: f.pasta,
+    adaptador: f.formato === "ctresb" ? ctresbMunicipio(f.jurisdicao, f.caminho, f.repo) : pastaMarkdown(f.jurisdicao, f.caminho, f.repo),
+  }))];
+}

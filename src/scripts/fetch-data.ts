@@ -2,12 +2,14 @@
  * Regenera data/snapshot/ a partir das fontes no GitHub (clones parciais em data/cache/, fora do git)
  * e grava data/snapshot/manifest.json com o commit exato de cada fonte (é dele que saem os permalinks).
  * Uso: npm run data:fetch [-- br-federal br-federal-lawcodex es br-sp-birigui]. Sem argumentos, atualiza todas.
+ * Fontes extras (municípios do ctresb, pastas de Markdown) se registram em data/snapshot/fontes.json, sem código.
  * Atenção: o primeiro clone de br-sp-birigui (ctresb/leis) leva ~7 min e ~250 MB; depois o cache resolve em segundos.
  */
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { fontesConfiguradas } from "../dados/adaptadores.ts";
 
 const RAIZ = fileURLToPath(new URL("../../data", import.meta.url));
 const CACHE = join(RAIZ, "cache");
@@ -33,12 +35,16 @@ const FONTES: Fonte[] = [
     pasta: "br-federal-lawcodex", repo: "LawCodex/br", cone: false, origem: ".", ignorar: CODIGOS_IGNORADOS,
     sparse: ["/codigos/*.md", ...LEIS_CHAVE.map((p) => `/${p}`)],
   },
-  { pasta: "br-sp-birigui", repo: "ctresb/leis", sparse: ["municipais/SP/birigui"], cone: true, origem: "municipais/SP/birigui", ignorar: /^_auditoria/ },
   {
     pasta: "es", repo: "legalize-dev/legalize-es", cone: false, origem: "es",
     // Constituição, Código Civil, consumidores, Estatuto dos Trabalhadores, proteção de dados.
     sparse: ["BOE-A-1978-31229", "BOE-A-1889-4763", "BOE-A-2007-20555", "BOE-A-2015-11430", "BOE-A-2018-16673"].map((id) => `/es/*/${id}.md`),
   },
+  // fontes.json: só as que têm repo; as outras já ficam direto em data/snapshot/<pasta>/.
+  ...fontesConfiguradas(SNAPSHOT).flatMap((f): Fonte[] => f.repo ? [{
+    pasta: f.pasta, repo: f.repo, origem: f.caminho, cone: f.caminho !== ".", sparse: [f.caminho === "." ? "/*" : f.caminho],
+    ...(f.ignorar ? { ignorar: new RegExp(f.ignorar) } : {}),
+  }] : []),
 ];
 
 const git = (cwd: string, ...args: string[]) => execFileSync("git", args, { cwd, stdio: ["ignore", "inherit", "inherit"] });

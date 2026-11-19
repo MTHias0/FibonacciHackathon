@@ -12,7 +12,7 @@ Plano: [docs/IDEIAS-MCP.md](docs/IDEIAS-MCP.md) · Roadmap do time: [docs/ROADMA
 ```sh
 nvm use      # Node 24+
 npm ci
-npm test     # 16 testes, incluindo um ponta a ponta com um cliente MCP real via stdio
+npm test     # 18 testes, incluindo um ponta a ponta com um cliente MCP real via stdio
 npm run mcp  # sobe o servidor via stdio (o cliente MCP é quem inicia o processo)
 ```
 
@@ -27,14 +27,20 @@ O `manifest.json` guarda o commit de cada fonte, e é dele que saem os permalink
 | `buscar_normas` | Busca com ranking BM25, filtro de jurisdição (prefixo), tipo e ano |
 | `ler_norma` | Norma, artigo **ou dispositivo**: `law://br/federal/constituicao-1988/art-5/inc-13`, `…/art-59/par-1` |
 | `verificar_citacoes` | Confere citações até inciso e parágrafo ("arts. 5º a 7º", "§ 1º do art. 59 da CLT", "CF, art. 5º, LXXVIII"): `ok`, `revogada`, `inexistente`, `divergente` ou `fora_da_base` |
-| `historico_norma` | Genealogia: quem alterou cada dispositivo e como ("Redação dada pela Lei nº 13.467/2017") |
+| `historico_norma` | Genealogia: quem alterou cada dispositivo e como ("Redação dada pela Lei nº 13.467/2017"). Em normas privadas, as versões do git com os artigos incluídos, alterados e removidos |
 | `impacto_da_norma` | O que uma lei mudou: "Reforma Trabalhista" → 378 dispositivos da CLT |
 | `comparar_jurisdicoes` | O mesmo tema em vários países, lado a lado |
 | `adicionar_norma` | Norma privada de escritório ou empresa em `law://local/{org}/…`, versionada em git local (B2B) |
+| `importar_normas` | Uma pasta de Markdown inteira vira a jurisdição `local/{org}`, num commit; reimportar grava só o que mudou |
 
 - **Resources:** cada norma é um documento `law://…` que o cliente pode anexar ao contexto, mais o `lawmcp://sobre`, com a cobertura e os commits.
 - **Prompts:** `responder_com_citacao`, `explicar_para_cidadao`, `revisar_peca`, `comparar_paises`.
 - **Instruções do servidor:** dizem ao agente para nunca citar lei de memória e para verificar as citações antes de responder.
+
+### Jurisdições novas e normas próprias
+
+- **Fonte oficial sem programar:** registre em [`data/snapshot/fontes.json`](data/snapshot/fontes.json), rode `npm run data:fetch -- <pasta>` e reinicie o servidor. Formatos: `ctresb` (um município do ctresb/leis, como o Birigui que já está lá) ou `markdown` (um `.md` por norma; frontmatter opcional `titulo`, `tipo`, `numero`, `data`, `fonte`, `apelidos`, `revogada`). Sem `repo`, ponha os `.md` direto em `data/snapshot/<pasta>/`. O prefixo `local/` é reservado.
+- **Normas privadas pelo chat:** `adicionar_norma` (uma) ou `importar_normas` (uma pasta do computador) gravam em `data/local/<org>/`, num git próprio. `historico_norma` mostra as versões.
 
 ## Plugar num cliente MCP
 
@@ -65,7 +71,7 @@ claude mcp add lawmcp -- "$(which node)" "$PWD/src/server.ts"
 npx @modelcontextprotocol/inspector node src/server.ts
 ```
 
-Variáveis opcionais: `LAWMCP_DATA` (pasta do snapshot) e `LAWMCP_LOCAL` (onde `adicionar_norma` grava; padrão `data/local/`, fora do git do projeto).
+Variáveis opcionais: `LAWMCP_DATA` (pasta do snapshot) e `LAWMCP_LOCAL` (onde `adicionar_norma` e `importar_normas` gravam; padrão `data/local/`, fora do git do projeto).
 
 ### Perguntas para a demo
 
@@ -76,6 +82,7 @@ Variáveis opcionais: `LAWMCP_DATA` (pasta do snapshot) e `LAWMCP_LOCAL` (onde `
 - *"Compare igualdade perante a lei no Brasil e na Espanha."*
 - *"Que leis de Birigui falam de IPTU?"*
 - *"Adicione a política interna de home office do escritório-silva: Art. 1º …"*
+- *"Importe a pasta /Users/…/politicas como escritorio-silva."* e depois *"O que mudou na última versão da política de home office?"*
 
 ## Estrutura
 
@@ -83,11 +90,11 @@ Variáveis opcionais: `LAWMCP_DATA` (pasta do snapshot) e `LAWMCP_LOCAL` (onde `
 src/server.ts              servidor MCP (stdio): tools, resources, prompts e instruções
 src/types.ts               contrato compartilhado (Norma, URIs, Alteracao, entradas e saídas)
 src/citacoes.ts            verificador de citações (listas, faixas, incisos, parágrafos, aspas)
-src/dados/adaptadores.ts   uma fonte por adaptador → Norma (adicionar jurisdição = novo adaptador em FONTES)
+src/dados/adaptadores.ts   uma fonte por adaptador → Norma; fontes sem código em data/snapshot/fontes.json
 src/dados/indice.ts        índice BM25 em memória, dispositivos, genealogia reversa e permalinks
 src/dados/texto.ts         normalização, artigos, dispositivos e atos citados ("Lei nº 13.467, de 2017")
 src/dados/catalogo.ts      apelidos de citação (CF, CC, CDC, LGPD, "Reforma Trabalhista", CE…)
-src/dados/locais.ts        normas privadas em git local (adicionar_norma)
+src/dados/locais.ts        normas privadas em git local (adicionar_norma, importar_normas, versões)
 src/scripts/fetch-data.ts  regenera data/snapshot/ e o manifest.json
 data/snapshot/             dados da demo (versionados)
 ```

@@ -14,7 +14,7 @@ Leia `CONTEXTO.md` antes de trabalhar. `CLAUDE.md` é um link para este arquivo,
 - TypeScript estrito, Node.js 24 ou superior, ESM. Código em `src/`, build em `dist/`, dependências fixadas por `package-lock.json`.
 - O Node roda `.ts` direto: imports relativos usam a extensão `.ts` (o `tsc` reescreve para `.js` no build).
 - MCP: `@modelcontextprotocol/sdk` e `zod` para os schemas. Tools em `src/server.ts`. No servidor stdio, **nunca escreva no stdout**: logs só com `console.error`.
-- Dados: cada fonte é um `Adaptador` em `src/dados/adaptadores.ts`, registrado em `FONTES`, que converte para `Norma`. O snapshot da demo fica em `data/snapshot/` e `data/cache/` não é versionado.
+- Dados: cada fonte é um `Adaptador` em `src/dados/adaptadores.ts` que converte para `Norma`. Fontes com formato próprio ficam em `FONTES`; município do ctresb ou pasta de Markdown se registra em `data/snapshot/fontes.json`, sem código. O snapshot da demo fica em `data/snapshot/` e `data/cache/` não é versionado.
 - O snapshot mantém os caminhos dos repositórios de origem, e `data/snapshot/manifest.json` (gerado por `npm run data:fetch`, nunca à mão) guarda o commit de cada fonte. Os dois juntos formam o permalink.
 - Normas privadas (`adicionar_norma`) só entram em `law://local/{org}/…`, num repositório git próprio em `data/local/` (ou `LAWMCP_LOCAL`), fora do git do projeto. Nunca escreva em jurisdições oficiais.
 - Testes: `node:test` em `src/**/*.test.ts`. Toda tool nova precisa de um teste.

@@ -4,7 +4,7 @@ import type {
   Alteracao, BuscarNormasEntrada, BuscarNormasSaida, HistoricoNormaSaida, ImpactoNormaSaida, LawUri,
   ListarJurisdicoesSaida, Norma, TipoAlteracao,
 } from "../types.ts";
-import { FONTES, normasLocais } from "./adaptadores.ts";
+import { normasLocais, todasAsFontes } from "./adaptadores.ts";
 import { CATALOGO, uriCatalogo } from "./catalogo.ts";
 import {
   dividirDispositivos, estaRevogado, normalizar, normalizarAlinhado, referenciaAto, rotuloDispositivo, tokenizar,
@@ -70,12 +70,12 @@ export class Indice {
     for (const n of normas) this.adicionar(n);
   }
 
-  /** Carrega as FONTES do snapshot (com permalinks do manifesto) e as normas locais (B2B), se houver. */
+  /** Carrega as fontes do snapshot (código e fontes.json), com permalinks do manifesto, e as normas locais (B2B), se houver. */
   static async carregar(dirSnapshot: string, dirLocal?: string): Promise<Indice> {
     const arqManifesto = join(dirSnapshot, "manifest.json");
     const manifesto: Manifesto = existsSync(arqManifesto) ? JSON.parse(readFileSync(arqManifesto, "utf8")) : {};
     const indice = new Indice();
-    for (const { pasta, adaptador } of FONTES) {
+    for (const { pasta, adaptador } of todasAsFontes(dirSnapshot)) {
       const dir = join(dirSnapshot, pasta);
       if (!existsSync(dir)) {
         console.error(`LawMCP: fonte "${pasta}" ausente em ${dir}. Rode npm run data:fetch.`);

@@ -1,0 +1,13 @@
+{
+  "_leia": "Fontes oficiais registradas sem programar. formato: ctresb (município do ctresb/leis) ou markdown (um .md por norma; frontmatter opcional: titulo, tipo, numero, data, fonte, apelidos, revogada). repo e caminho dizem de onde npm run data:fetch baixa; sem repo, ponha os .md direto em data/snapshot/<pasta>/. Depois: npm run data:fetch -- <pasta> e reinicie o servidor.",
+  "fontes": [
+    {
+      "pasta": "br-sp-birigui",
+      "jurisdicao": "br/sp/birigui",
+      "formato": "ctresb",
+      "repo": "ctresb/leis",
+      "caminho": "municipais/SP/birigui",
+      "ignorar": "^_auditoria"
+    }
+  ]
+}

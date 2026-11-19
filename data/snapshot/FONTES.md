@@ -2,6 +2,7 @@
 
 Recorte da demo, versionado para o LawMCP rodar sem download. Para regenerar: `npm run data:fetch`.
 O commit exato de cada fonte fica em `manifest.json`, que é a base dos permalinks. Não edite à mão.
+Fontes sem adaptador próprio (municípios do ctresb, pastas de Markdown) são registradas em `fontes.json`, sem código; o `br-sp-birigui` é o exemplo.
 
 | Pasta | Origem | Licença / uso |
 |---|---|---|

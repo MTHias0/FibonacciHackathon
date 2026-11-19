@@ -138,6 +138,19 @@ export interface HistoricoNormaSaida {
   /** Para norma inteira: quais normas mais a alteraram. */
   alteradoras: { norma?: LawUri; rotulo: string; total: number; naBase: boolean }[];
   total: number;
+  /** Só normas privadas (law://local/…): versões no git local, da mais nova para a mais antiga. */
+  versoes?: VersaoNorma[];
+}
+
+/** Um commit de uma norma privada, com os artigos que mudaram em relação à versão anterior. */
+export interface VersaoNorma {
+  commit: string;
+  /** ISO 8601. */
+  data: string;
+  mensagem: string;
+  incluidos: string[];
+  alterados: string[];
+  removidos: string[];
 }
 
 export interface ImpactoNormaEntrada {
@@ -171,6 +184,25 @@ export interface AdicionarNormaSaida {
   uri: LawUri;
   commit: string;
   artigos: number;
+}
+
+export interface ImportarNormasEntrada {
+  organizacao: string;
+  /** Pasta com um .md por norma (frontmatter opcional: titulo, tipo, numero, data, fonte, apelidos). */
+  pasta: string;
+  /** Padrões para arquivos sem esses campos no frontmatter. */
+  tipo?: string;
+  fonte?: string;
+}
+export interface ImportarNormasSaida {
+  jurisdicao: string;
+  commit: string;
+  total: number;
+  novas: number;
+  atualizadas: number;
+  inalteradas: number;
+  normas: { uri: LawUri; titulo: string; artigos: number }[];
+  ignorados: { arquivo: string; motivo: string }[];
 }
 
 /** Anexado a toda resposta que devolve texto legal. */

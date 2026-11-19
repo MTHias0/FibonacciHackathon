@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, test } from "node:test";
@@ -161,16 +161,31 @@ const conectar = async () => {
   return { client, chamar };
 };
 
-test("MCP: 8 tools, 4 prompts, resources e instruções", async () => {
+test("fontes.json: registra uma jurisdição em Markdown sem código e recusa configuração inválida", async () => {
+  const snap = join(temp, "snapshot");
+  mkdirSync(join(snap, "br-sp-teste"), { recursive: true });
+  writeFileSync(join(snap, "fontes.json"), JSON.stringify({ fontes: [{ pasta: "br-sp-teste", jurisdicao: "br/sp/teste", formato: "markdown" }] }));
+  writeFileSync(join(snap, "br-sp-teste", "Lei 100 de 2020.md"), "---\ntitulo: Lei Municipal nº 100/2020\nrevogada: false\n---\n\nArt. 1º Fica criado o parque municipal.\n");
+  const ind = await Indice.carregar(snap);
+  assert.deepEqual(ind.listarJurisdicoes().jurisdicoes.map((j) => j.jurisdicao), ["br/sp/teste"]);
+  assert.match(ind.ler("law://br/sp/teste/lei-100-de-2020/art-1")!.texto, /parque/);
+  assert.equal(ind.ler("law://br/sp/teste/lei-100-de-2020")!.situacao, "vigente");
+  assert.ok(ind.buscar({ consulta: "parque", jurisdicao: "br/sp" }).resultados.some((r) => r.uri === "law://br/sp/teste/lei-100-de-2020/art-1"));
+  writeFileSync(join(snap, "fontes.json"), JSON.stringify({ fontes: [{ pasta: "x", jurisdicao: "local/x", formato: "markdown" }] }));
+  await assert.rejects(Indice.carregar(snap), /local\/ é reservado/);
+});
+
+test("MCP: 9 tools, 4 prompts, resources e instruções", async () => {
   const { client } = await conectar();
   try {
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map((t) => t.name).sort(), [
       "adicionar_norma", "buscar_normas", "comparar_jurisdicoes", "historico_norma",
-      "impacto_da_norma", "ler_norma", "listar_jurisdicoes", "verificar_citacoes",
+      "impacto_da_norma", "importar_normas", "ler_norma", "listar_jurisdicoes", "verificar_citacoes",
     ]);
-    assert.equal(tools.find((t) => t.name === "adicionar_norma")?.annotations?.readOnlyHint, false);
-    assert.ok(tools.filter((t) => t.name !== "adicionar_norma").every((t) => t.annotations?.readOnlyHint));
+    const escrita = ["adicionar_norma", "importar_normas"];
+    assert.ok(tools.filter((t) => escrita.includes(t.name)).every((t) => t.annotations?.readOnlyHint === false));
+    assert.ok(tools.filter((t) => !escrita.includes(t.name)).every((t) => t.annotations?.readOnlyHint));
     const { prompts } = await client.listPrompts();
     assert.deepEqual(prompts.map((p) => p.name).sort(), ["comparar_paises", "explicar_para_cidadao", "responder_com_citacao", "revisar_peca"]);
     const p = await client.getPrompt({ name: "revisar_peca", arguments: { texto: "art. 5º da CF" } });
@@ -231,8 +246,46 @@ test("MCP: adicionar_norma grava em git local, indexa e versiona", async () => {
     assert.equal((await chamar("ler_norma", { uri: `${v1.uri}/art-2` })).erro, true, "artigo removido na versão 2");
     const log = execFileSync("git", ["log", "--format=%s"], { cwd: temp }).toString();
     assert.match(log, /Atualiza Política de Home Office\nAdiciona Política de Home Office/);
+    const h = (await chamar("historico_norma", { uri: v1.uri })).json();
+    assert.deepEqual(h.versoes.map((v: { commit: string; alterados: string[]; removidos: string[] }) => [v.commit, v.alterados, v.removidos]),
+      [[v2.commit, ["art-1"], ["art-2"]], [v1.commit, [], []]]);
+    assert.equal((await chamar("historico_norma", { uri: `${v1.uri}/art-1` })).json().versoes.length, 2, "incluído na v1, alterado na v2");
 
     assert.equal((await chamar("adicionar_norma", { organizacao: "../etc", tipo: "x", titulo: "abc", fonte: "x", texto: "0123456789" })).erro, true);
+  } finally {
+    await client.close();
+  }
+});
+
+test("MCP: importar_normas cria a jurisdição a partir de uma pasta e versiona só o que mudou", async () => {
+  const pasta = mkdtempSync(join(tmpdir(), "lawmcp-import-"));
+  after(() => rmSync(pasta, { recursive: true, force: true }));
+  mkdirSync(join(pasta, "rh"));
+  writeFileSync(join(pasta, "etica.md"), "---\ntitulo: Código de Ética\napelidos: [CEI]\n---\n\nArt. 1º É vedado aceitar presentes.\n\nArt. 2º Conflitos de interesse devem ser informados.\n");
+  writeFileSync(join(pasta, "rh", "ferias.md"), "# Regulamento de Férias\n\nArt. 1º As férias são marcadas com 30 dias de antecedência.\n");
+  writeFileSync(join(pasta, "README.md"), "# Leia-me\n\nNão é norma.");
+  writeFileSync(join(pasta, "vazio.md"), "---\ntitulo: Vazio\n---\n");
+  const { client, chamar } = await conectar();
+  try {
+    const r = (await chamar("importar_normas", { organizacao: "empresa-x", pasta })).json();
+    assert.equal(r.jurisdicao, "local/empresa-x");
+    assert.equal(r.novas, 2);
+    assert.deepEqual(r.normas.map((n: { uri: string }) => n.uri).sort(), ["law://local/empresa-x/codigo-de-etica", "law://local/empresa-x/regulamento-de-ferias"]);
+    assert.deepEqual(r.ignorados, [{ arquivo: "vazio.md", motivo: "texto vazio" }]);
+    assert.match((await chamar("ler_norma", { uri: "law://local/empresa-x/regulamento-de-ferias/art-1" })).texto, /30 dias/);
+    assert.deepEqual(verificar("art. 2º do CEI"), ["ok law://local/empresa-x/codigo-de-etica/art-2"]);
+    assert.ok(indice.listarJurisdicoes().jurisdicoes.some((j) => j.jurisdicao === "local/empresa-x"));
+
+    writeFileSync(join(pasta, "rh", "ferias.md"), "# Regulamento de Férias\n\nArt. 1º As férias são marcadas com 45 dias de antecedência.\n\nArt. 2º Podem ser divididas em três períodos.\n");
+    const r2 = (await chamar("importar_normas", { organizacao: "empresa-x", pasta })).json();
+    assert.deepEqual([r2.novas, r2.atualizadas, r2.inalteradas], [0, 1, 1]);
+    assert.notEqual(r2.commit, r.commit);
+    const h = (await chamar("historico_norma", { uri: "law://local/empresa-x/regulamento-de-ferias" })).json();
+    assert.deepEqual(h.versoes.map((v: { incluidos: string[]; alterados: string[] }) => [v.incluidos, v.alterados]), [[["art-2"], ["art-1"]], [["art-1"], []]]);
+    assert.equal(h.versoes[0].commit, r2.commit);
+
+    assert.equal((await chamar("importar_normas", { organizacao: "empresa-x", pasta: "relativa/pasta" })).erro, true);
+    assert.equal((await chamar("importar_normas", { organizacao: "empresa-x", pasta: join(pasta, "nao-existe") })).erro, true);
   } finally {
     await client.close();
   }
@@ -249,7 +302,7 @@ test("ponta a ponta: cliente MCP real chama as tools via stdio", async () => {
   }));
   try {
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 8);
+    assert.equal(tools.length, 9);
     const texto = (r: Awaited<ReturnType<typeof client.callTool>>) => (r.content as { text: string }[])[0]!.text;
     assert.match(texto(await client.callTool({ name: "ler_norma", arguments: { uri: "law://br/federal/lei-8078-1990/art-49" } })), /desistir do contrato/);
     const v = JSON.parse(texto(await client.callTool({ name: "verificar_citacoes", arguments: { texto: "art. 7º, XCIX, da CF" } })));

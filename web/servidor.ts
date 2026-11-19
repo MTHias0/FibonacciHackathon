@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { comContexto, MODOS, rotear, type Modo } from "./roteador.ts";
-import { aquecer, disponivel, MODELO, traduzir, type Traducao } from "./tradutor.ts";
+import { disponivel, MODELO, traduzir, type Traducao } from "./tradutor.ts";
 
 const PORTA = Number(process.env.PORT ?? 5173);
 const PUBLICO = fileURLToPath(new URL("./public/", import.meta.url));
@@ -27,7 +27,6 @@ const cliente = new Client({ name: "lawmcp-web", version: "0.2.0" });
 await cliente.connect(new StdioClientTransport({ command: process.execPath, args: [SERVIDOR_MCP] }));
 const { tools } = await cliente.listTools();
 const PERMITIDAS = new Set(tools.map((t) => t.name).filter((n) => !BLOQUEADAS.has(n)));
-aquecer();
 
 interface Passo { tool: string; args: Record<string, unknown>; ms: number; resultado?: unknown; erro?: string }
 
@@ -43,7 +42,7 @@ async function chamar(tool: string, args: Record<string, unknown>): Promise<Pass
 async function chat(texto: string, modo: Modo, jurisdicao?: string, anteriores: string[] = []): Promise<{ passos: Passo[]; traducao?: Traducao }> {
   texto = comContexto(texto, anteriores);
   const plano = rotear(texto, modo, jurisdicao);
-  // Busca em linguagem leiga: o modelo local reescreve no vocabulário da lei. Sem resultado, volta para as regras.
+  // Busca em linguagem leiga: o Claude da conta logada reescreve no vocabulário da lei. Sem resultado, volta para as regras.
   if (plano.tool === "buscar_normas") {
     const traducao = await traduzir(texto, { jurisdicao: plano.args.jurisdicao as string | undefined });
     if (traducao) {

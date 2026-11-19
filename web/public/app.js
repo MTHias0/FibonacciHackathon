@@ -225,7 +225,7 @@ const nomeModelo = (m) => String(m).split(":")[0];
 function passosHtml(passos, traducao) {
   const ms = passos.reduce((s, p) => s + p.ms, traducao?.ms ?? 0);
   const nomes = [...(traducao ? [`<code>${esc(nomeModelo(traducao.modelo))}</code>`] : []), ...passos.map((p) => `<code>${esc(p.tool)}</code>`)].join(" → ");
-  const lista = (traducao ? `<li><b>${esc(traducao.modelo)}</b> (Ollama, local) “${esc(traducao.de)}” → “${esc(traducao.para)}” · ${traducao.ms} ms</li>` : "") + passos.map((p) => `<li><b>${esc(p.tool)}</b> ${esc(JSON.stringify(p.args))} · ${p.ms} ms${p.tool === "verificar_citacoes" && passos.length > 1 ? ` · ${esc(p.resultado?.citacoes?.[0]?.citacao ?? "")} → ${esc(p.resultado?.citacoes?.[0]?.status ?? "")}` : ""}</li>`).join("");
+  const lista = (traducao ? `<li><b>${esc(traducao.modelo)}</b> (Claude, sua conta) “${esc(traducao.de)}” → “${esc(traducao.para)}” · ${traducao.ms} ms</li>` : "") + passos.map((p) => `<li><b>${esc(p.tool)}</b> ${esc(JSON.stringify(p.args))} · ${p.ms} ms${p.tool === "verificar_citacoes" && passos.length > 1 ? ` · ${esc(p.resultado?.citacoes?.[0]?.citacao ?? "")} → ${esc(p.resultado?.citacoes?.[0]?.status ?? "")}` : ""}</li>`).join("");
   return `<button class="passos" type="button" aria-expanded="false">${icone("check")}Usou ${nomes} · ${ms} ms${icone("seta")}</button><ol class="passos-lista" hidden>${lista}</ol>`;
 }
 
@@ -326,7 +326,7 @@ async function enviar(texto, modoEnvio = modo) {
     const { passos, traducao } = await api("/api/chat", { texto, modo: modoEnvio, jurisdicao, anteriores });
     conversa.itens.push({ passos, traducao });
     resposta.innerHTML = renderResposta(passos, traducao);
-    if (traducao) registrar({ tool: `ollama · ${nomeModelo(traducao.modelo)}`, args: { pergunta: traducao.de }, resultado: { consulta: traducao.para, modelo: traducao.modelo }, ms: traducao.ms });
+    if (traducao) registrar({ tool: `claude · ${nomeModelo(traducao.modelo)}`, args: { pergunta: traducao.de }, resultado: { consulta: traducao.para, modelo: traducao.modelo }, ms: traducao.ms });
     passos.forEach(registrar);
   } catch (err) {
     conversa.itens.push({ erro: err.message });
@@ -529,7 +529,7 @@ atualizarEnviar();
   try {
     const { tools, jurisdicoes, tradutor } = await api("/api/estado");
     estado.classList.add("on");
-    $("#estado-texto").innerHTML = `MCP conectado · <b data-n="${jurisdicoes.total}">0</b> docs${tradutor ? `<br>IA local: ${esc(nomeModelo(tradutor))}` : ""}`;
+    $("#estado-texto").innerHTML = `MCP conectado · <b data-n="${jurisdicoes.total}">0</b> docs${tradutor ? `<br>IA: Claude ${esc(nomeModelo(tradutor))} (sua conta)` : ""}`;
     estado.querySelectorAll("[data-n]").forEach((b) => contar(b, Number(b.dataset.n), 1200));
     preencherFiltro(jurisdicoes.jurisdicoes.map((j) => j.jurisdicao));
     $("#tools").innerHTML = tools.map((t) => `<li class="${t.liberada ? "" : "bloqueada"}" title="${esc(t.liberada ? t.description : "Bloqueada na web: grava em disco")}">${esc(t.name)}</li>`).join("");

@@ -1,15 +1,22 @@
 /**
- * Tradutor de linguagem leiga para o vocabulário da lei, com um modelo local do Ollama.
+ * Tradutor de linguagem leiga para o vocabulário da lei, com o Claude da conta logada no Claude Code (`claude -p`).
  * "bater carro" não acha nada na busca BM25; "acidente de trânsito reparar o dano" acha o CTB e o Código Civil.
- * Opcional: sem Ollama, sem o modelo ou em caso de erro, devolve null e a web segue com as regras.
- * Desligue com OLLAMA_MODEL= (vazio).
+ * Opcional: sem o CLI, sem login ou em caso de erro, devolve null e a web segue com as regras.
+ * Desligue com CLAUDE_MODEL= (vazio). Login: `claude auth login`.
  */
+import { execFile } from "node:child_process";
 
-export const MODELO = process.env.OLLAMA_MODEL ?? "qwen2.5:7b-instruct-q4_K_M";
-const URL_OLLAMA = process.env.OLLAMA_URL ?? "http://127.0.0.1:11434";
+export const MODELO = process.env.CLAUDE_MODEL ?? "haiku";
 
 export interface Traducao { de: string; para: string; modelo: string; ms: number }
-interface Opcoes { jurisdicao?: string | undefined; modelo?: string; url?: string; fetch?: typeof fetch; timeoutMs?: number }
+/** Roda o CLI com a entrada no stdin e devolve o stdout. Injetável nos testes. */
+export type Executar = (args: string[], entrada: string, timeoutMs: number) => Promise<string>;
+interface Opcoes { jurisdicao?: string | undefined; modelo?: string; executar?: Executar; timeoutMs?: number }
+
+const executarClaude: Executar = (args, entrada, timeout) => new Promise((ok, falha) => {
+  const filho = execFile("claude", args, { timeout, maxBuffer: 1 << 20 }, (err, stdout) => (err ? falha(err) : ok(stdout)));
+  filho.stdin?.end(entrada);
+});
 
 const SISTEMA = `Você reescreve perguntas de cidadãos como consulta para um buscador de leis do Brasil e da Espanha que só entende o vocabulário da própria lei.
 Troque palavras do dia a dia pelos termos jurídicos. Mantenha nomes próprios, números e siglas (IPTU, CLT, LGPD) que a pergunta trouxer.
@@ -41,40 +48,27 @@ export async function traduzir(pergunta: string, opcoes: Opcoes = {}): Promise<T
   const modelo = opcoes.modelo ?? MODELO;
   if (!modelo) return null;
   const inicio = performance.now();
+  // Sem tools, MCP, hooks nem plugins: o modelo só devolve o JSON. "Pergunta:" impede que o texto vire um /comando.
+  const args = ["-p", "--safe-mode", "--tools", "", "--strict-mcp-config", "--no-session-persistence", "--output-format", "json",
+    "--model", modelo, "--system-prompt", SISTEMA, "--json-schema", JSON.stringify(FORMATO)];
+  const entrada = `Pergunta: ${pergunta.slice(0, 500)}${opcoes.jurisdicao ? `\nJurisdição: ${opcoes.jurisdicao === "es" ? "Espanha" : opcoes.jurisdicao}` : ""}`;
   try {
-    const r = await (opcoes.fetch ?? fetch)(`${opcoes.url ?? URL_OLLAMA}/api/chat`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model: modelo, stream: false, format: FORMATO, keep_alive: "30m", options: { temperature: 0 },
-        messages: [{ role: "system", content: SISTEMA }, { role: "user", content: pergunta.slice(0, 500) + (opcoes.jurisdicao ? `\nJurisdição: ${opcoes.jurisdicao === "es" ? "Espanha" : opcoes.jurisdicao}` : "") }],
-      }),
-      signal: AbortSignal.timeout(opcoes.timeoutMs ?? 20_000),
-    });
-    if (!r.ok) return null;
-    const para = limparConsulta(((await r.json()) as { message?: { content?: string } }).message?.content);
+    const saida = JSON.parse(await (opcoes.executar ?? executarClaude)(args, entrada, opcoes.timeoutMs ?? 30_000)) as { is_error?: boolean; result?: string; modelUsage?: Record<string, unknown> };
+    if (saida.is_error) return null;
+    const para = limparConsulta(saida.result);
     // Número que a pergunta não trouxe é artigo inventado pelo modelo: descarta e a web usa as regras.
     if (para?.match(/\d+/g)?.some((n) => !pergunta.includes(n))) return null;
-    return para ?{ de: pergunta, para, modelo, ms: Math.round(performance.now() - inicio) } : null;
+    return para ? { de: pergunta, para, modelo: Object.keys(saida.modelUsage ?? {})[0] ?? modelo, ms: Math.round(performance.now() - inicio) } : null;
   } catch (err) {
     console.error("tradutor:", (err as Error).message);
     return null;
   }
 }
 
-/** O modelo está baixado e o Ollama responde? Usado no estado da web. */
+/** O CLI do Claude está instalado e logado? Usado no estado da web. */
 export async function disponivel(): Promise<boolean> {
   if (!MODELO) return false;
-  try {
-    const r = await fetch(`${URL_OLLAMA}/api/tags`, { signal: AbortSignal.timeout(1500) });
-    const { models } = (await r.json()) as { models?: { name: string }[] };
-    return models?.some((m) => m.name === MODELO || m.name === `${MODELO}:latest`) ?? false;
-  } catch {
-    return false;
-  }
-}
-
-/** Carrega o modelo na memória ao subir a web, para a primeira pergunta não esperar uns 20 s. */
-export function aquecer() {
-  if (MODELO) fetch(`${URL_OLLAMA}/api/generate`, { method: "POST", body: JSON.stringify({ model: MODELO, keep_alive: "30m" }) }).catch(() => {});
+  return new Promise((ok) => execFile("claude", ["auth", "status", "--json"], { timeout: 5000 }, (err, stdout) => {
+    try { ok(!err && (JSON.parse(stdout) as { loggedIn?: boolean }).loggedIn === true); } catch { ok(false); }
+  }));
 }

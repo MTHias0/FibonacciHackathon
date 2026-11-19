@@ -104,13 +104,13 @@ src/dados/locais.ts        normas privadas em git local (adicionar_norma, import
 src/scripts/fetch-data.ts  regenera data/snapshot/ e o manifest.json
 web/servidor.ts            ponte HTTP → cliente MCP (stdio), serve o front em web/public/
 web/roteador.ts            mensagem do chat → tool MCP (regras)
-web/tradutor.ts            pergunta leiga → vocabulário da lei (Ollama local, opcional)
+web/tradutor.ts            pergunta leiga → vocabulário da lei (Claude da conta logada, opcional)
 data/snapshot/             dados da demo (versionados)
 ```
 
 ## Comandos
 
-- `npm run web`: front em http://localhost:5173 (chat, verificador, impacto, histórico, BR × ES e bastidores MCP). Porta: `PORT`. Com o Ollama rodando (`ollama serve` e `ollama pull qwen2.5:7b-instruct-q4_K_M`), as buscas em linguagem leiga são traduzidas para os termos da lei; sem ele, a web usa só as regras. Variáveis: `OLLAMA_MODEL` (vazio desliga) e `OLLAMA_URL`.
+- `npm run web`: front em http://localhost:5173 (chat, verificador, impacto, histórico, BR × ES e bastidores MCP). Porta: `PORT`. Com o Claude Code logado (`claude auth login`, usa a sua conta, sem chave de API), as buscas em linguagem leiga são traduzidas para os termos da lei via `claude -p`; sem ele, a web usa só as regras. Variável: `CLAUDE_MODEL` (padrão `haiku`, vazio desliga).
 - `npm run mcp`: servidor via stdio. `npm run dev`: o mesmo, reiniciando ao salvar.
 - `npm test`: testes (node:test). `npm run typecheck` / `npm run build` / `npm start` (versão compilada).
 - `npm run data:fetch [-- br-federal br-federal-lawcodex es br-sp-birigui]`: atualiza o snapshot.

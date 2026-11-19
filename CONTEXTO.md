@@ -16,6 +16,7 @@
 - `AGENTS.md` é a fonte única de instruções. `CONTEXTO.md` é o único registro de estado.
 - Produto: **LawMCP**. A integração via MCP é o foco, com front mínimo. Público B2B (advogados, empresas, plataformas) e B2C (cidadãos).
 - Demo: BR federal + 1 município + Espanha, com `adicionar_norma`. MCP só local (stdio).
+- **Ordem de entrega: 1) o MCP (tools P0 no Claude Desktop via stdio), 2) extras do MCP, 3) front e pitch.** Detalhes em `docs/IDEIAS-MCP.md` › Ordem de entrega.
 - Prazo: 3h, 3 devs com agentes (MCP, back/dados, infra/front). Divisão em `docs/IDEIAS-MCP.md` §8.
 
 ## Pendências
@@ -26,6 +27,6 @@
 
 ## Próximo passo
 
-Congelar o contrato (`Norma`, URIs, schemas das tools) em `src/types.ts` e dividir as tarefas conforme `docs/IDEIAS-MCP.md` §8.
+Contrato criado em `src/types.ts` (só tipos, sem implementação). Próximo: instalar `@modelcontextprotocol/sdk` e começar a **entrega 1** conforme a divisão em `docs/IDEIAS-MCP.md` §8.
 
 <!-- Atualizado em 2026-11-19 por Claude (sessão de João Matheus). -->

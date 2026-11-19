@@ -6,7 +6,8 @@ Leia `CONTEXTO.md` antes de trabalhar. `CLAUDE.md` é um link para este arquivo,
 
 - Hackathon com tema central **integração via MCP (Model Context Protocol)**. Pense as soluções como servidores e clientes MCP (tools, resources, prompts).
 - As ideias em discussão estão em `docs/IDEIAS-MCP.md`. Só é decisão o que estiver em `CONTEXTO.md` › Decisões.
-- Não implemente funcionalidades nem escolha frameworks antes de o escopo ser aprovado.
+- **A primeira entrega é o MCP** (LawMCP com tools P0 via stdio). Front, landing e pitch só depois de ela funcionar no Claude Desktop.
+- O contrato compartilhado fica em `src/types.ts`. Não altere sem combinar com o time.
 
 ## Arquitetura
 

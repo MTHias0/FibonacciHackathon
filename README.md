@@ -6,6 +6,9 @@ A ideia em discussão é expor a legislação brasileira versionada em git
 (ex.: [ctresb/leis](https://github.com/ctresb/leis)) como servidor MCP.
 O escopo final ainda será decidido pelo time.
 
+**Primeira entrega: o MCP (LawMCP via stdio, tools P0). Front e pitch vêm depois.**
+Contrato compartilhado: [src/types.ts](src/types.ts).
+
 **Comece por [docs/IDEIAS-MCP.md](docs/IDEIAS-MCP.md):** o panorama, as ideias de produto,
 a arquitetura MCP proposta, o MVP recomendado e as perguntas em aberto.
 

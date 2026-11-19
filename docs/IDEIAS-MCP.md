@@ -7,6 +7,14 @@
 
 **Um único servidor MCP para consultar, citar e verificar a lei de qualquer jurisdição** (país, estado, município, distrito; lei, decreto, portaria…), com fonte, vigência e histórico em cada resposta. Qualquer agente de IA (Claude, Cursor, OpenBot, plataformas jurídicas) pluga e para de alucinar lei.
 
+## Ordem de entrega
+
+> **A entrega 1 é o MCP.** Nada de front, landing ou pitch antes de o LawMCP responder às tools P0 no Claude Desktop via stdio.
+
+1. **Entrega 1, o MCP (obrigatória):** servidor stdio com as tools **P0** sobre as 3 jurisdições da demo, contrato em `src/types.ts`, `data:fetch` e config pronta para o Claude Desktop. Pronto = funciona ponta a ponta no Claude Desktop.
+2. **Entrega 2, extras do MCP:** tools **P1** (`adicionar_norma`, `historico_norma`), resources, prompts e testes em outros clientes (Cursor, OpenBot).
+3. **Entrega 3, o resto:** página mínima, chat ou painel básico, pitch e polimento.
+
 ## 2. Decidido
 
 | Tema | Decisão |
@@ -94,15 +102,16 @@ Claude Desktop · Cursor · OpenBot ──stdio──▶ LawMCP (TS, @modelconte
 
 | Quem | Entrega |
 |---|---|
-| **Dev 1: MCP** | Servidor stdio, tools P0 com schemas (zod), resources, prompts, testes com o MCP Inspector |
+| **Dev 1: MCP** | Entrega 1: servidor stdio e tools P0 com schemas. Depois: resources, prompts e tools P1 |
 | **Dev 2: Back/dados** | Adaptadores (legislacao-br, ctresb Birigui, legalize-es), índice de busca, `verificar_citacoes`, `adicionar_norma` |
-| **Dev 3: Infra/front/pitch** | `data:fetch` (sparse clone), scripts npm, configs dos clientes MCP, página mínima (o que é e como plugar), roteiro e ensaio da demo |
+| **Dev 3: Infra → front/pitch** | Entrega 1: `data:fetch` (sparse clone), scripts npm, config do Claude Desktop e testes no MCP Inspector. **Só depois da entrega 1:** página mínima, roteiro e ensaio da demo |
 
 **Cronograma**
-- 0:00–0:20: congelar o contrato (`Norma`, URIs, schemas das tools) em `src/types.ts`.
-- 0:20–2:00: desenvolvimento em paralelo.
-- 2:00–2:30: integração ponta a ponta no Claude Desktop.
-- 2:30–3:00: correções, ensaio e pitch.
+- 0:00–0:15: ler o contrato em `src/types.ts` (já criado) e dividir as tarefas.
+- 0:15–1:45: **entrega 1**. Todos no MCP: tools P0, adaptadores e `data:fetch`.
+- 1:45: **checkpoint**. O LawMCP responde no Claude Desktop? Se não, todos param o resto e fecham a entrega 1.
+- 1:45–2:30: entrega 2 (tools P1, outros clientes MCP).
+- 2:30–3:00: entrega 3 (página mínima, ensaio e pitch).
 
 ## 9. Roteiro de demo (3 min)
 

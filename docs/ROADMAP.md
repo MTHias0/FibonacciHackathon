@@ -40,7 +40,8 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
   - Cosmético:
     - O `texto` traz âncoras HTML (`<a id="par-unico"></a>`).
     - Um arquivo importado sem frontmatter recebe como título o nome do arquivo ("reembolso").
-- [ ] Escrever o roteiro de demo em `docs/DEMO.md`: 5 perguntas, a tool que cada uma deve acionar e a resposta esperada.
+- [x] Escrever o roteiro de demo em `docs/DEMO.md`: 5 perguntas, a tool que cada uma deve acionar e a resposta esperada.
+  - As tools de cada pergunta foram testadas no Inspector (`--cli`). Falta ensaiar as 5 perguntas no Claude Desktop.
 
 **Depois do MCP v2**
 - [ ] Repetir o roteiro de demo no Claude Desktop e no OpenBot.

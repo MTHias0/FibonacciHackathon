@@ -23,12 +23,6 @@ npm ci
 - `npm run build`: compila para `dist/`.
 - `npm start`: executa a versão compilada; requer build prévio.
 
-## Continuidade entre agentes
+## Para agentes e colegas
 
 Leia [AGENTS.md](AGENTS.md) e [CONTEXTO.md](CONTEXTO.md) antes de trabalhar.
-`CLAUDE.md` aponta para `AGENTS.md`. A skill compartilhada fica em
-[.agents/skills/trabalho-atual/SKILL.md](.agents/skills/trabalho-atual/SKILL.md),
-com uma entrada simbólica em `.claude/skills/trabalho-atual`.
-
-O pacote está marcado como `private` para impedir publicação acidental no npm.
-Isso não define a visibilidade do repositório GitHub.

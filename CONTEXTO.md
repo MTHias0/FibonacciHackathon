@@ -68,4 +68,6 @@
 1. Checkpoint: plugar no Claude Desktop e rodar as perguntas de demo do README.
 2. Entrega 3: revisar e mergear o front (`figueirego/web`), prints para os slides, pitch e ensaio. Ver `docs/ROADMAP.md`.
 
-<!-- Atualizado em 2026-11-19 por Claude (sessão de João Matheus): página visual Archify. -->
+- README reestruturado para os revisores do hackathon (2026-11-19, branch `figueirego/readme`): resumo de 30 s, exemplo real de `verificar_citacoes`, diagrama mermaid, tools, demo e limitações. Números conferidos: `npm test` (24 passando) e saídas reais das tools via cliente MCP stdio.
+
+<!-- Atualizado em 2026-11-19 por Claude (sessão de João Matheus): README para revisores. -->

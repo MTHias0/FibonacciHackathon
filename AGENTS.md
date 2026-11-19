@@ -5,6 +5,7 @@ Leia `CONTEXTO.md` antes de trabalhar. `CLAUDE.md` é um link para este arquivo,
 ## Projeto
 
 - Hackathon com tema central **integração via MCP (Model Context Protocol)**. Pense as soluções como servidores e clientes MCP (tools, resources, prompts).
+- A documentação do projeto fica em `docs/` (índice: `docs/README.md`). Ao mudar o código, atualize a página afetada no mesmo commit.
 - As ideias em discussão estão em `docs/IDEIAS-MCP.md`. Só é decisão o que estiver em `CONTEXTO.md` › Decisões.
 - **A primeira entrega é o MCP** (LawMCP via stdio, já implementado na v0.2). Front, landing e pitch só depois de ele funcionar no Claude Desktop. O que cada dev faz está em `docs/ROADMAP.md`.
 - O contrato compartilhado fica em `src/types.ts`. Não altere sem combinar com o time.

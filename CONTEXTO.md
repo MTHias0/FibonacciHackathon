@@ -9,8 +9,8 @@
   - `historico_norma` mostra as versões das normas locais a partir do git, com os artigos incluídos, alterados e removidos.
 - Base: 15.162 documentos (normas e artigos), sendo 11.956 de br/federal (43 normas: CF, CDC, CLT, ECA, Inquilinato, 17 códigos e 21 leis-chave), 654 de br/sp/birigui e 2.552 de es. Cada um com permalink no commit exato da fonte (`data/snapshot/manifest.json`).
 - Verificado: `npm test` (18 testes, incluindo um ponta a ponta via stdio, `adicionar_norma` e `importar_normas` com git e `fontes.json`), `typecheck`, `build` e `initialize` do servidor compilado. Carga do índice: cerca de 3 s com cache de disco e 9 a 14 s a frio; o stdio conecta antes e as tools esperam a carga. Heap: cerca de 95 MB.
-- **Ainda não testado na interface do Claude Desktop, do Cursor nem do OpenBot.**
-- Roadmap por dev: `docs/ROADMAP.md`.
+- Testado no MCP Inspector (web e CLI) e no Claude Desktop com o MCP v1. **Falta ensaiar o `docs/DEMO.md` no Claude Desktop com a versão atual, o Cursor e o OpenBot.**
+- Roadmap por dev: `docs/ROADMAP.md`. Documentação organizada em `docs/` (índice em `docs/README.md`, páginas 01 a 09).
 
 ## Fatos
 

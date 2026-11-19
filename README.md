@@ -5,6 +5,8 @@ Qualquer agente de IA (Claude Desktop, Claude Code, Cursor, OpenBot…) pluga e 
 
 **Lei com recibo:** toda resposta traz o permalink do texto exato num commit do GitHub. Dá para auditar de onde saiu cada artigo, e o link não muda quando a fonte é atualizada.
 
+**Documentação completa: [docs/](docs/README.md)** (visão geral, arquitetura, referência das tools, dados, jurisdições próprias, verificador, clientes e demo, testes, decisões).
+
 Plano: [docs/IDEIAS-MCP.md](docs/IDEIAS-MCP.md) · Roadmap do time: [docs/ROADMAP.md](docs/ROADMAP.md) · Contrato: [src/types.ts](src/types.ts) · Estado: [CONTEXTO.md](CONTEXTO.md)
 
 ## Rodar
@@ -75,11 +77,13 @@ Variáveis opcionais: `LAWMCP_DATA` (pasta do snapshot) e `LAWMCP_LOCAL` (onde `
 
 ### Perguntas para a demo
 
+Roteiro completo de palco: [docs/DEMO.md](docs/DEMO.md).
+
 - *"O art. 49 do CDC ainda vale? Cite a fonte."*
 - *"Verifique as citações: segundo o art. 999 do CDC e o art. 7º, inciso XCIX, da CF, o consumidor recebe em dobro."*
 - *"O que a Reforma Trabalhista mudou na CLT?"*
 - *"Quem alterou o art. 59 da CLT?"*
-- *"Compare igualdade perante a lei no Brasil e na Espanha."*
+- *"Compare as regras de horas extras no Brasil e na Espanha."*
 - *"Que leis de Birigui falam de IPTU?"*
 - *"Adicione a política interna de home office do escritório-silva: Art. 1º …"*
 - *"Importe a pasta /Users/…/politicas como escritorio-silva."* e depois *"O que mudou na última versão da política de home office?"*

@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-Base TypeScript preparada em 2026-11-19 pelo Codex, no diretório `/Users/matheusg/Developer/FibonacciHackathon`. Git local inicializado na branch `main`. Aguardando o contexto do negócio e autenticação na API do GitHub para criar o repositório público. Nenhuma funcionalidade de negócio implementada.
+Base TypeScript preparada em 2026-11-19 pelo Codex, no diretório `/Users/matheusg/Developer/FibonacciHackathon`. Repositório público criado em https://github.com/MTHias0/FibonacciHackathon, com branch `main` publicada. Aguardando o contexto do negócio. Nenhuma funcionalidade de negócio implementada.
 
 ## Fatos confirmados
 
@@ -26,13 +26,13 @@ A definir após receber o contexto: problema, público, proposta de valor, fluxo
 
 ## Pendências
 
-- Criar e publicar o repositório público `FibonacciHackathon` no GitHub. `gh auth status` informa ausência de autenticação. O usuário informa possuir acesso SSH; SSH permite push, mas não substitui autenticação na API para criar o repositório. Aguardar `gh auth login` ou URL de um repositório já criado.
-
 - Receber as informações do negócio.
 - Localizar a skill `grillme`: não encontrada no catálogo nem nos diretórios locais pesquisados. Sua origem ainda não foi informada.
 - O ambiente desta sessão informa acesso irrestrito ao sistema de arquivos e rede habilitada. Isso não amplia o escopo autorizado do trabalho.
 
 ## Registro de alterações
+
+- 2026-11-19 (Codex): criado e confirmado como público o repositório `MTHias0/FibonacciHackathon`; `main` enviada e configurada para acompanhar `origin/main`. SSH retornou `Permission denied (publickey)`; configurados origin HTTPS e helper de credenciais do `gh` apenas neste repositório, sem salvar tokens nos arquivos do projeto.
 
 - 2026-11-19 (Codex): renomeada a pasta para `FibonacciHackathon`; criados `package.json`, `package-lock.json`, `tsconfig.json`, `src/index.ts`, `.gitignore`, `.editorconfig`, `.nvmrc` e `README.md`; atualizadas as regras em `AGENTS.md`. Git local inicializado em `main`; publicação remota pendente.
 
@@ -40,6 +40,8 @@ A definir após receber o contexto: problema, público, proposta de valor, fluxo
 - 2026-11-19 (Codex): adicionada a skill `.agents/skills/trabalho-atual/SKILL.md`; configurados links relativos em `CLAUDE.md` e `.claude/skills/trabalho-atual` para compartilhar instruções e skill sem cópias. Ampliado `AGENTS.md` com protocolo de continuidade e regras de arquitetura.
 
 ## Verificação e limitações
+
+- GitHub confirmou visibilidade `PUBLIC` e branch padrão `main`; push inicial concluído via HTTPS.
 
 - `npm run typecheck`, `npm run build`, `npm start` e execução direta de `src/index.ts` passaram. Instalação informou zero vulnerabilidades. Os dois links relativos continuam válidos após renomear a pasta.
 - `.gitignore` exclui dependências, build e arquivos `.env`; não há testes de negócio porque nenhuma funcionalidade foi implementada.
@@ -49,4 +51,4 @@ A definir após receber o contexto: problema, público, proposta de valor, fluxo
 
 ## Próximo passo
 
-Após autenticação, verificar a conta ativa, criar o repositório público `FibonacciHackathon`, configurar `origin`, enviar `main` e confirmar a visibilidade pública. Depois, receber o contexto do negócio e a origem da skill `grillme`.
+Receber o contexto do negócio e a origem da skill `grillme`. Investigar decisões de negócio antes de implementar funcionalidades.

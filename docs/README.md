@@ -11,6 +11,7 @@ Esta pasta explica o que ele faz, como funciona por dentro e como usar, estender
 | **Instalar e ligar no Claude Code ou no OpenBot** (e Claude Desktop, Cursor) | **[Guia de instalação](INSTALACAO.md)** |
 | Entender o produto, o problema e o pitch | [01. Visão geral](01-visao-geral.md) |
 | Entender o código e como as peças se ligam | [02. Arquitetura](02-arquitetura.md) |
+| Ver numa página só, com diagramas, do MCP até a chamada pelo chat web | [Página visual](visual/lawmcp-ponta-a-ponta.html) (abra no navegador) |
 | Saber o que cada tool recebe e devolve | [03. Referência MCP](03-referencia-mcp.md) |
 | Saber de onde vêm as leis e como atualizar | [04. Dados e fontes](04-dados-e-fontes.md) |
 | Adicionar município, país ou normas da empresa | [05. Jurisdições próprias](05-jurisdicoes-proprias.md) |

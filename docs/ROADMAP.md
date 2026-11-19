@@ -47,9 +47,9 @@ A base passa de 5 normas federais para cerca de 40: CF, códigos (CC, CPC, CP, C
 ## Dev 2: dados e verificador
 
 **Agora**
-- [ ] Montar `docs/CASOS-DE-TESTE.md` com 20 citações reais para o verificador: trechos de petições, respostas de IA com lei inventada, artigo revogado, inciso inexistente e trecho entre aspas alterado. Para cada uma, o status esperado (`ok`, `revogada`, `inexistente`, `divergente`, `fora_da_base`).
-- [ ] Pesquisar a próxima fonte e registrar em `docs/FONTES-CANDIDATAS.md`: repo, licença, formato do Markdown, se tem histórico e se tem notas de alteração. Prioridades: um estado brasileiro (ex.: SP), outro município do ctresb e um estado dos EUA.
-- [ ] Conferir 10 artigos aleatórios do snapshot contra o Planalto e o BOE (texto, situação, data).
+- [x] Montar `docs/CASOS-DE-TESTE.md` com 20 citações reais para o verificador: trechos de petições, respostas de IA com lei inventada, artigo revogado, inciso inexistente e trecho entre aspas alterado. Para cada uma, o status esperado (`ok`, `revogada`, `inexistente`, `divergente`, `fora_da_base`).
+- [x] Pesquisar a próxima fonte e registrar em `docs/FONTES-CANDIDATAS.md`: repo, licença, formato do Markdown, se tem histórico e se tem notas de alteração. Prioridades: um estado brasileiro (ex.: SP), outro município do ctresb e um estado dos EUA.
+- [x] Conferir 10 artigos aleatórios do snapshot contra o Planalto e o BOE (texto, situação, data). Resultado em `docs/CONFERENCIA-SNAPSHOT.md`.
 
 **Depois do MCP v2**
 - [ ] Transformar `CASOS-DE-TESTE.md` em testes no `src/lawmcp.test.ts` (toda tool nova precisa de teste).

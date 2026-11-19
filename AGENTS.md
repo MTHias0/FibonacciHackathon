@@ -18,7 +18,8 @@ Leia `CONTEXTO.md` antes de trabalhar. `CLAUDE.md` é um link para este arquivo,
 - Dados: cada fonte é um `Adaptador` em `src/dados/adaptadores.ts` que converte para `Norma`. Fontes com formato próprio ficam em `FONTES`; município do ctresb ou pasta de Markdown se registra em `data/snapshot/fontes.json`, sem código. O snapshot da demo fica em `data/snapshot/` e `data/cache/` não é versionado.
 - O snapshot mantém os caminhos dos repositórios de origem, e `data/snapshot/manifest.json` (gerado por `npm run data:fetch`, nunca à mão) guarda o commit de cada fonte. Os dois juntos formam o permalink.
 - Normas privadas (`adicionar_norma`) só entram em `law://local/{org}/…`, num repositório git próprio em `data/local/` (ou `LAWMCP_LOCAL`), fora do git do projeto. Nunca escreva em jurisdições oficiais.
-- Testes: `node:test` em `src/**/*.test.ts`. Toda tool nova precisa de um teste.
+- Testes: `node:test` em `src/**/*.test.ts` e `web/**/*.test.ts`. Toda tool nova precisa de um teste.
+- Front: `web/` é só mais um cliente MCP. `web/servidor.ts` fala com o LawMCP pelo protocolo (stdio), nunca importa o índice direto. Tools que gravam ficam bloqueadas na web enquanto não houver autenticação. Front em HTML/CSS/JS puro em `web/public/`, sem build.
 - Registre aqui as novas regras permanentes de arquitetura e, em `CONTEXTO.md`, o motivo de cada uma.
 - Implemente o menor sistema completo que cumpra os requisitos confirmados. Reutilize antes de abstrair.
 - Preserve validação, segurança e integridade dos dados. Nunca registre segredos no repositório.

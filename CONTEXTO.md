@@ -11,6 +11,10 @@
 - Verificado: `npm test` (18 testes, incluindo um ponta a ponta via stdio, `adicionar_norma` e `importar_normas` com git e `fontes.json`), `typecheck`, `build` e `initialize` do servidor compilado. Carga do índice: cerca de 3 s com cache de disco e 9 a 14 s a frio; o stdio conecta antes e as tools esperam a carga. Heap: cerca de 112 MB (com os trechos por dispositivo dos artigos longos, que corrigiram "igualdade perante a lei" sem o art. 5º da CF).
 - Testado no MCP Inspector (web e CLI) e no Claude Desktop com o MCP v1. **Falta ensaiar o `docs/DEMO.md` no Claude Desktop com a versão atual, o Cursor e o OpenBot.**
 - Roadmap por dev: `docs/ROADMAP.md`. Documentação organizada em `docs/` (índice em `docs/README.md`, páginas 01 a 09).
+- **Front `web/` implementado** (branch `figueirego/web`): `npm run web` sobe `web/servidor.ts`, que é um cliente MCP via stdio e serve um chat em HTML/CSS/JS sem framework nem build. Layout de chat (barra lateral com histórico salvo só no navegador, caixa de mensagem com os modos, painel "Bastidores MCP" que abre e fecha), fonte Montserrat. O chat roteia por regras (`web/roteador.ts`) para buscar, verificar, impacto, histórico e Brasil × Espanha, com leitor da norma e recibo do permalink. `adicionar_norma` e `importar_normas` ficam bloqueadas na web (gravam em disco e não há autenticação).
+- **Tradutor leigo → lei implementado** (`web/tradutor.ts`, aprovado pelo Matheus): nas buscas, o `qwen2.5:7b-instruct-q4_K_M` local (Ollama) reescreve a pergunta no vocabulário da lei (em espanhol quando é sobre a Espanha). Se o Ollama não responder, a consulta trouxer número que a pergunta não citou (artigo inventado) ou nada for achado, a web volta para as regras. Só roda na web, o servidor MCP não muda. Variáveis: `OLLAMA_MODEL` (vazio desliga) e `OLLAMA_URL`. O front mostra o modelo no "Usou…", nos Bastidores e no rodapé da lateral.
+- **Filtro de jurisdição implementado:** seletor na caixa de mensagem (Todas, Brasil, Brasil · Federal, Brasil · Birigui (SP), Espanha), montado a partir de `listar_jurisdicoes` e lembrado no navegador. Vale para busca e verificação (prefixo, como o `buscar_normas` já aceitava) e vence o que o texto sugere; fica desligado em "O que mudou" e "Brasil × Espanha". Com Espanha escolhida, o tradutor escreve a consulta em espanhol. O servidor só aceita prefixos válidos (`br`, `br/federal`…) e ignora o resto.
+- Verificado no front: `npm test` (21 testes, 3 do roteador e 2 do tradutor), `typecheck` do `src/` e do `web/`, os 6 exemplos da demo no Chrome a 1440 px (claro e escuro) e a 390 px sem rolagem lateral, e o console sem erros. Tradutor verificado com o Ollama local: "bater carro" → CTB e Código Penal Militar art. 281; "devolver compra pela internet" → CDC art. 49; "hora extra" → CLT art. 59; dados pessoais e demissão na Espanha → LOPDGDD e Estatuto de los Trabajadores art. 56 (1 a 4 s por pergunta). Não testado: Safari e Firefox, leitor de tela, máquina sem Ollama de verdade (só nos testes com fetch falso). Limite: "barulho de madrugada" traduz bem mas o snapshot não tem norma de perturbação do sossego.
 
 ## Fatos
 
@@ -53,10 +57,11 @@
   - `importar_normas` lê qualquer pasta que o cliente indicar (só arquivos `.md`). O cliente MCP pede aprovação da chamada, mas é bom saber.
 - Critérios de avaliação do hackathon e MCPs ou APIs de patrocinadores.
 - Skill `grillme`, pedida por um colega: origem desconhecida.
+- A decidir: chat com LLM (Claude com as tools do MCP) no lugar do roteador por regras. Exige a dependência `@anthropic-ai/sdk` e uma chave, e a decisão "sem frameworks" pede aprovação do time.
 
 ## Próximo passo
 
 1. Checkpoint: plugar no Claude Desktop e rodar as perguntas de demo do README.
-2. Entrega 3: front mínimo em `web/` (ponte HTTP → cliente MCP), pitch e ensaio. Ver `docs/ROADMAP.md`.
+2. Entrega 3: revisar e mergear o front (`figueirego/web`), prints para os slides, pitch e ensaio. Ver `docs/ROADMAP.md`.
 
-<!-- Atualizado em 2026-11-19 por Claude (sessão de João Matheus). -->
+<!-- Atualizado em 2026-11-19 por Claude (sessão de João Matheus): front web/. -->

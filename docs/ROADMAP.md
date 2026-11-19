@@ -113,11 +113,11 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
   - público: advogados, cidadãos, empresas e devs;
   - modelo B2B e B2C;
   - próximos passos: mais países e estados, HTTP remoto.
-- [ ] Front mínimo em `web/`: uma página com caixa de texto e dois botões, "Buscar lei" e "Verificar citações". A resposta aparece com o permalink clicável.
-- [ ] Ponte do front com o MCP em `web/servidor.ts`: um servidor Node pequeno que usa o **cliente MCP** do SDK (`StdioClientTransport` iniciando `src/server.ts`) e expõe `POST /api/tool`. Isso também prova o argumento do pitch: qualquer app integra o LawMCP pelo protocolo, sem API própria.
+- [x] Front mínimo em `web/`: uma página com caixa de texto e dois botões, "Buscar lei" e "Verificar citações". A resposta aparece com o permalink clicável.
+- [x] Ponte do front com o MCP em `web/servidor.ts`: um servidor Node pequeno que usa o **cliente MCP** do SDK (`StdioClientTransport` iniciando `src/server.ts`) e expõe `POST /api/tool`. Isso também prova o argumento do pitch: qualquer app integra o LawMCP pelo protocolo, sem API própria.
 
 **Depois do MCP v2**
-- [ ] Ligar os botões às tools `buscar_normas`, `verificar_citacoes` e `impacto_da_norma`.
+- [x] Ligar os botões às tools `buscar_normas`, `verificar_citacoes` e `impacto_da_norma`.
 - [ ] Slides finais com prints da demo real.
 
 ---

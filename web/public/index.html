@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+  <title>LawMCP · a lei com recibo</title>
+  <meta name="description" content="Chat para perguntar sobre leis, verificar citações e ver o que mudou. Cada resposta vem do servidor MCP LawMCP com o permalink do texto no commit exato.">
+  <meta name="theme-color" content="#F7F6F2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111316" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="/selo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/app.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body data-vazio="true">
+  <a class="pular" href="#entrada">Pular para a pergunta</a>
+
+  <aside class="lateral" id="lateral" aria-label="Conversas">
+    <div class="lateral-topo">
+      <a class="marca" href="/" aria-label="LawMCP, início">
+        <svg class="selo" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18.5"/><circle cx="20" cy="20" r="14" class="tracejado"/><text x="20" y="26" text-anchor="middle">§</text></svg>
+        <span>LawMCP</span>
+      </a>
+      <button class="icone-botao so-compacto" type="button" data-fechar-lateral aria-label="Fechar conversas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <button class="nova" type="button" id="nova">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Nova conversa
+    </button>
+    <h2 class="rotulo-lista">Recentes</h2>
+    <ol class="conversas" id="conversas"></ol>
+    <p class="estado" id="estado" role="status"><span class="pulso" aria-hidden="true"></span><span id="estado-texto">Conectando ao MCP…</span></p>
+  </aside>
+  <div class="veu" id="veu" hidden></div>
+
+  <main class="principal">
+    <header class="barra">
+      <button class="icone-botao so-compacto" type="button" id="abrir-lateral" aria-controls="lateral" aria-expanded="false" aria-label="Abrir conversas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      </button>
+      <h1 class="titulo-conversa" id="titulo-conversa">Nova conversa</h1>
+      <button class="botao-barra" type="button" id="abrir-bastidores" aria-controls="bastidores" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M14.5 4.5v15"/></svg>
+        <span>Bastidores MCP</span>
+      </button>
+    </header>
+
+    <div class="rolagem" id="rolagem">
+      <section class="boas-vindas" id="boas-vindas" aria-labelledby="ola">
+        <svg class="selo selo-grande" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18.5"/><circle cx="20" cy="20" r="14" class="tracejado"/><text x="20" y="26" text-anchor="middle">§</text></svg>
+        <h2 id="ola">Pergunte sobre qualquer lei</h2>
+        <p>Busque, confira citações e veja o que mudou. Cada resposta vem do LawMCP com o recibo da fonte.</p>
+      </section>
+      <ol class="mensagens" id="mensagens" aria-live="polite"></ol>
+    </div>
+
+    <form class="compositor" id="compositor" autocomplete="off">
+      <div class="caixa">
+        <label class="visualmente-oculto" for="entrada">Pergunta ou texto com citações</label>
+        <textarea id="entrada" rows="1" maxlength="50000" placeholder="Pergunte sobre uma lei ou cole um texto com citações…"></textarea>
+        <div class="barra-caixa">
+          <div class="modos" role="radiogroup" aria-label="O que fazer" id="modos"></div>
+          <label class="filtro" title="Buscar e verificar só nesta jurisdição">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+            <span class="visualmente-oculto">Jurisdição</span>
+            <select id="jurisdicao"><option value="">Todas</option></select>
+            <svg class="seta-filtro" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </label>
+          <button class="enviar" type="submit" aria-label="Enviar">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="sugestoes" id="sugestoes"></div>
+      <p class="aviso">Conteúdo informativo de fontes abertas. Não substitui a publicação oficial nem um advogado.</p>
+    </form>
+  </main>
+
+  <aside class="bastidores" id="bastidores" aria-label="Bastidores MCP" hidden>
+    <div class="bastidores-topo">
+      <h2>Bastidores MCP</h2>
+      <button class="icone-botao" type="button" id="fechar-bastidores" aria-label="Fechar bastidores">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <p class="bastidores-sub">Este chat é só mais um cliente MCP. Cada pergunta vira uma chamada de tool via stdio, como no Claude Desktop.</p>
+    <ol class="fluxo" id="fluxo" aria-hidden="true">
+      <li><b>Você</b><span>navegador</span></li>
+      <li><b>Ponte</b><span>web/servidor.ts</span></li>
+      <li><b>LawMCP</b><span>stdio · JSON-RPC</span></li>
+      <li><b>Índice</b><span>BM25 · 15 mil docs</span></li>
+    </ol>
+    <h3>Chamadas</h3>
+    <ol class="chamadas" id="chamadas"><li class="nenhuma">Nenhuma chamada nesta sessão.</li></ol>
+    <h3>Tools expostas</h3>
+    <ul class="tools" id="tools"></ul>
+  </aside>
+
+  <dialog class="leitor" id="leitor" aria-labelledby="leitor-titulo">
+    <div class="leitor-corpo" id="leitor-corpo"></div>
+  </dialog>
+</body>
+</html>

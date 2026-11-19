@@ -10,11 +10,12 @@
   "scripts": {
     "mcp": "node src/server.ts",
     "dev": "node --watch src/server.ts",
-    "test": "node --test \"src/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\" \"web/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p web",
     "build": "tsc",
     "start": "node dist/server.js",
-    "data:fetch": "node src/scripts/fetch-data.ts"
+    "data:fetch": "node src/scripts/fetch-data.ts",
+    "web": "node web/servidor.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

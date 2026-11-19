@@ -37,6 +37,7 @@ A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN,
     - Interface web: conectou e `ler_norma` do art. 49 do CDC trouxe texto, fonte, vigência e permalink.
     - Modo CLI: 9 tools, 704 resources e 4 prompts. Rodei 17 chamadas, cobrindo todas as tools, e todas responderam. As que gravam (`adicionar_norma`, `importar_normas`) usaram `LAWMCP_LOCAL` numa pasta temporária, com commits, nova versão e reimportação sem mudanças. Entradas inválidas (`../hack`, pasta inexistente, `law://../../etc/passwd`) foram recusadas.
   - Erro: `comparar_jurisdicoes` com "igualdade perante a lei" não traz o art. 5º da CF no Brasil. Vêm Licitações art. 80, Propriedade Industrial art. 4º e Liberdade Econômica art. 2º. A pergunta de demo correspondente vai falhar.
+    - Corrigido: artigos longos agora também são buscados por dispositivo, e o art. 5º vem em 1º. Teste de regressão em `buscar_normas`.
   - Cosmético:
     - O `texto` traz âncoras HTML (`<a id="par-unico"></a>`).
     - Um arquivo importado sem frontmatter recebe como título o nome do arquivo ("reembolso").

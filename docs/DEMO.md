@@ -59,7 +59,7 @@ Cole cada pergunta exatamente como está. A coluna "Tool esperada" diz o que dev
   - **Espanha:** Estatuto de los Trabajadores, art. 35 ("horas extraordinarias"), e art. 36.
   - Tudo com fonte (Planalto e BOE).
 - **O que falar:** "O mesmo servidor responde por qualquer país. Adicionar um país é escrever um adaptador."
-- **Não use** "igualdade perante a lei" nesta pergunta. Por um erro da busca, o lado brasileiro não traz o art. 5º da CF (ver ROADMAP, Dev 1).
+- "Igualdade perante a lei" também funciona agora: o erro da busca que escondia o art. 5º da CF foi corrigido (ver ROADMAP, Dev 1).
 
 ### 5. A norma do seu escritório (B2B)
 

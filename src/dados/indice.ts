@@ -42,6 +42,56 @@ const PESO_TITULO = 3;
 const URI_DISPOSITIVO = /^(law:\/\/.+\/(?:adct-)?art-[\w-]+?)\/(caput|inc-\d+|par-\d+|par-unico)$/;
 const URI_ARTIGO = /^(law:\/\/.+)\/((?:adct-)?art-[\w-]+)$/;
 
+/** Artigos com mais que isto (caracteres) também são indexados por dispositivo. */
+const MIN_TRECHOS = 1_200;
+
+/** Índice invertido BM25: postings planos [doc, frequência, …] e o comprimento de cada doc. */
+interface Colecao { postings: Map<string, number[]>; comprimentos: number[]; soma: number }
+const novaColecao = (): Colecao => ({ postings: new Map(), comprimentos: [], soma: 0 });
+
+/** Indexa título (peso 3) e texto; devolve o id do novo doc na coleção. */
+function indexar(c: Colecao, titulo: string, texto: string): number {
+  const id = c.comprimentos.length;
+  const tf = new Map<string, number>();
+  let comprimento = 0;
+  for (const t of tokenizar(titulo)) { tf.set(t, (tf.get(t) ?? 0) + PESO_TITULO); comprimento += PESO_TITULO; }
+  for (const t of tokenizar(texto)) { tf.set(t, (tf.get(t) ?? 0) + 1); comprimento++; }
+  for (const [t, f] of tf) {
+    const p = c.postings.get(t);
+    if (p) p.push(id, f);
+    else c.postings.set(t, [id, f]);
+  }
+  c.comprimentos.push(comprimento);
+  c.soma += comprimento;
+  return id;
+}
+
+/** BM25 vezes a fração de termos casados; só entra quem casa pelo menos `minimo` termos. */
+function pontuar(c: Colecao, termos: string[], minimo: number): Map<number, number> {
+  const N = c.comprimentos.length;
+  const media = c.soma / Math.max(N, 1);
+  const score = new Map<number, number>();
+  const casados = new Map<number, number>();
+  for (const t of termos) {
+    const p = c.postings.get(t);
+    if (!p) continue;
+    const df = p.length / 2;
+    const idf = Math.log(1 + (N - df + 0.5) / (df + 0.5));
+    for (let k = 0; k < p.length; k += 2) {
+      const d = p[k]!;
+      const f = p[k + 1]!;
+      score.set(d, (score.get(d) ?? 0) + (idf * f * (K1 + 1)) / (f + K1 * (1 - B + (B * c.comprimentos[d]!) / media)));
+      casados.set(d, (casados.get(d) ?? 0) + 1);
+    }
+  }
+  const notas = new Map<number, number>();
+  for (const [d, s] of score) {
+    const n = casados.get(d)!;
+    if (n >= minimo) notas.set(d, s * (n / termos.length));
+  }
+  return notas;
+}
+
 export function permalink(repo: string, commit: string, caminho: string): string {
   return `https://github.com/${repo}/blob/${commit}/${caminho.split("/").map(encodeURIComponent).join("/")}`;
 }
@@ -58,9 +108,13 @@ export function uriDispositivo(uriArtigo: string, dispositivo: string): LawUri {
 export class Indice {
   private readonly docs: Norma[] = [];
   private readonly porUri = new Map<string, number>();
-  private readonly postings = new Map<string, number[]>();
-  private readonly comprimentos: number[] = [];
-  private somaComprimentos = 0;
+  private readonly colecao = novaColecao();
+  /**
+   * Dispositivos de artigos longos, buscáveis à parte: o artigo vale a nota do melhor trecho.
+   * Sem isso, o caput do art. 5º da CF ("iguais perante a lei… à igualdade") some entre 78 incisos.
+   */
+  private readonly trechos = novaColecao();
+  private readonly paiTrecho: number[] = [];
   private readonly artigosPorNorma = new Map<string, string[]>();
   private readonly alteradasPor = new Map<string, Alterado[]>();
   private cacheApelidos: Apelido[] | undefined;
@@ -102,19 +156,15 @@ export class Indice {
     this.docs.push(n);
     this.porUri.set(n.uri, i);
 
-    const tf = new Map<string, number>();
-    let comprimento = 0;
-    for (const t of tokenizar(n.titulo)) { tf.set(t, (tf.get(t) ?? 0) + PESO_TITULO); comprimento += PESO_TITULO; }
-    for (const t of tokenizar(n.texto)) { tf.set(t, (tf.get(t) ?? 0) + 1); comprimento++; }
-    for (const [t, f] of tf) {
-      const p = this.postings.get(t);
-      if (p) p.push(i, f);
-      else this.postings.set(t, [i, f]);
-    }
-    this.comprimentos.push(comprimento);
-    this.somaComprimentos += comprimento;
+    indexar(this.colecao, n.titulo, n.texto);
 
     const art = URI_ARTIGO.exec(n.uri);
+    if (art && n.texto.length > MIN_TRECHOS) {
+      for (const bloco of dividirDispositivos(n.texto).values()) {
+        indexar(this.trechos, n.titulo, bloco);
+        this.paiTrecho.push(i);
+      }
+    }
     if (art) {
       const lista = this.artigosPorNorma.get(art[1]!) ?? [];
       lista.push(art[2]!);
@@ -214,27 +264,15 @@ export class Indice {
       (!tipo || normalizar(n.tipo).includes(tipo)) &&
       (!e.ano || (n.data?.startsWith(String(e.ano)) ?? false));
 
-    const N = this.docs.length;
-    const media = this.somaComprimentos / Math.max(N, 1);
-    const score = new Map<number, number>();
-    const casados = new Map<number, number>();
-    for (const t of termos) {
-      const p = this.postings.get(t);
-      if (!p) continue;
-      const df = p.length / 2;
-      const idf = Math.log(1 + (N - df + 0.5) / (df + 0.5));
-      for (let k = 0; k < p.length; k += 2) {
-        const d = p[k]!;
-        const f = p[k + 1]!;
-        const s = (idf * f * (K1 + 1)) / (f + K1 * (1 - B + (B * this.comprimentos[d]!) / media));
-        score.set(d, (score.get(d) ?? 0) + s);
-        casados.set(d, (casados.get(d) ?? 0) + 1);
-      }
-    }
     const minimo = termos.length <= 2 ? termos.length : Math.ceil(termos.length * 0.6);
-    let candidatos = [...score]
-      .filter(([d]) => (casados.get(d) ?? 0) >= minimo && this.vivo(d) && passa(this.docs[d]!))
-      .map(([d, s]) => ({ d, s: s * ((casados.get(d) ?? 0) / termos.length) }))
+    const notas = pontuar(this.colecao, termos, minimo);
+    for (const [t, s] of pontuar(this.trechos, termos, minimo)) {
+      const d = this.paiTrecho[t]!;
+      if (s > (notas.get(d) ?? 0)) notas.set(d, s);
+    }
+    let candidatos = [...notas]
+      .filter(([d]) => this.vivo(d) && passa(this.docs[d]!))
+      .map(([d, s]) => ({ d, s }))
       .sort((a, b) => b.s - a.s)
       .slice(0, Math.max(limite * 4, 40));
     // Frase exata (com stopwords) vale mais: "direito de arrependimento".

@@ -116,7 +116,7 @@ Busca o mesmo tema em várias jurisdições lado a lado. Mande a consulta já tr
 | `consultas` | lista de 2 a 6 `{ jurisdicao, consulta }` | sim | Ex.: `[{"jurisdicao":"br","consulta":"todos são iguais perante a lei"},{"jurisdicao":"es","consulta":"iguales ante la ley"}]` |
 | `limite` | inteiro (1 a 10) | não | Resultados por jurisdição. Padrão 3 |
 
-Saída: `comparacao[]`, uma entrada por consulta, com os `resultados` no formato de `buscar_normas`. No exemplo acima, o primeiro resultado de cada lado é o art. 5º da CF e o artículo 14 da Constitución. Com "igualdade perante a lei", o art. 5º não aparece: é uma limitação da busca ([09](09-decisoes-e-limitacoes.md)).
+Saída: `comparacao[]`, uma entrada por consulta, com os `resultados` no formato de `buscar_normas`. No exemplo acima, o primeiro resultado de cada lado é o art. 5º da CF e o artículo 14 da Constitución. "Igualdade perante a lei" também traz o art. 5º em primeiro.
 
 ### historico_norma
 

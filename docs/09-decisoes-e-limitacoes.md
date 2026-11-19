@@ -10,7 +10,7 @@ O registro oficial do que foi decidido é o [CONTEXTO.md](../CONTEXTO.md) › De
 | 2 | TypeScript estrito no Node 24, rodando `.ts` direto, sem framework | Menos peças em 3 horas; o SDK oficial do MCP é TypeScript | Build obrigatório, frameworks web |
 | 3 | Snapshot dos dados versionado no repo | O clone do ctresb leva cerca de 7 minutos; a demo precisa rodar offline | Baixar na partida |
 | 4 | Permalink pelo commit do `manifest.json` | Cada artigo fica auditável e o link não muda quando a fonte muda ("lei com recibo") | Link para a branch principal |
-| 5 | Índice BM25 em memória, sem dependência | 15 mil documentos cabem em cerca de 95 MB; resposta em milissegundos | Banco externo. Revisitar com SQLite FTS5 acima de cerca de 200 mil normas |
+| 5 | Índice BM25 em memória, sem dependência, com trechos por dispositivo nos artigos longos | 15 mil documentos e 14,5 mil trechos cabem em cerca de 112 MB; resposta em milissegundos; artigo longo não perde para artigo curto | Banco externo. Revisitar com SQLite FTS5 acima de cerca de 200 mil normas |
 | 6 | Genealogia a partir das notas das fontes | Os repositórios de origem não reconstroem versões antigas pelo `git log` | Diff de commits das fontes |
 | 7 | Duas fontes federais brasileiras | legislacao-br tem âncoras e notas (genealogia precisa); LawCodex cobre códigos e leis-chave | Uma fonte só, com menos cobertura ou menos detalhe |
 | 8 | Normas privadas só em `local/{org}`, num git próprio fora do repo | Nunca misturar norma privada com oficial; versionamento de graça; nada privado sobe para o GitHub | Gravar no snapshot |
@@ -29,7 +29,7 @@ As duas mudanças foram feitas a pedido do líder do time e estão registradas n
 
 | Área | Limitação |
 |---|---|
-| Busca | Radical por truncamento: "igualdade" não acha "iguais". Por isso "igualdade perante a lei" não traz o art. 5º da CF (Roadmap, Dev 1) |
+| Busca | Radical por truncamento: "igualdade" não acha "iguais" (o art. 5º da CF aparece porque o caput também diz "igualdade"). Os resultados são por artigo, não por dispositivo |
 | Texto | O texto do legislacao-br traz âncoras HTML (`<a id="par-unico"></a>`) |
 | Verificador | Não confere alíneas; ignora "art. 5º" solto, sem norma; o trecho divergente só é visto entre aspas logo depois da citação |
 | Dados | As normas do Birigui (ctresb) não são divididas em artigos |

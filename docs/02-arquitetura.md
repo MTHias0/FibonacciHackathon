@@ -41,7 +41,7 @@ O cliente MCP inicia o processo `node src/server.ts` e conversa com ele pelo std
 1. `npm run mcp` (ou o cliente MCP) executa `src/server.ts`. O Node 24 roda TypeScript direto, sem build.
 2. `Indice.carregar(DIR_SNAPSHOT, DIR_LOCAL)` começa a carregar as fontes como uma promessa.
 3. O transporte stdio conecta na hora, sem esperar a carga. As tools aguardam o índice ficar pronto.
-4. O tempo de carga vai para o stderr: cerca de 4 s com o disco em cache e de 9 a 14 s a frio. Heap de cerca de 95 MB.
+4. O tempo de carga vai para o stderr: cerca de 4 s com o disco em cache e de 9 a 14 s a frio. Heap de cerca de 112 MB.
 
 Regra fixa: **o stdout é do protocolo MCP**. Qualquer log usa `console.error`.
 
@@ -86,6 +86,7 @@ law://local/escritorio-silva/politica-de-home-office  norma privada
 - Tokens: minúsculos, sem acento, sem stopwords de português e espanhol, com radical por truncamento em 7 letras ("arrependimento" e "arrependido" casam).
 - Consultas com até 2 termos exigem todos; com mais, 60% deles. A frase exata da consulta multiplica o score por 1,8.
 - Postings guardados como arrays planos `[documento, frequência, …]`, o que derrubou o heap de cerca de 296 MB para 95 MB.
+- **Trechos:** artigos com mais de 1.200 caracteres também são indexados por dispositivo (caput, cada inciso, cada parágrafo), numa segunda coleção BM25. O artigo vale a maior nota entre ele inteiro e o seu melhor trecho. Sem isso, o caput do art. 5º da CF ("iguais perante a lei… à igualdade") sumia entre os 78 incisos, porque o BM25 pune documentos longos. Custo: cerca de 14,5 mil trechos e 17 MB a mais de heap (112 MB no total).
 - Filtros: jurisdição por prefixo (`br` inclui `br/sp/birigui`), tipo e ano.
 
 ## Dispositivos e genealogia

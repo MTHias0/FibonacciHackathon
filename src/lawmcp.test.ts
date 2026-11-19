@@ -75,6 +75,8 @@ test("buscar_normas: ranking BM25 põe o artigo certo no topo", () => {
     indice.buscar({ consulta, limite: n, ...(jurisdicao ? { jurisdicao } : {}) }).resultados.map((r) => r.uri);
   assert.ok(top("direito de arrependimento", "br").includes("law://br/federal/lei-8078-1990/art-49"));
   assert.equal(top("iguales ante la ley", "es")[0], "law://es/BOE-A-1978-31229/art-14");
+  // Artigo longo: o caput do art. 5º não pode sumir entre os 78 incisos.
+  assert.equal(top("igualdade perante a lei", "br")[0], "law://br/federal/constituicao-1988/art-5");
   assert.equal(top("responsabilidade civil dano moral ato ilícito", "br")[0], "law://br/federal/lei-10406-2002/art-186");
   assert.ok(top("IPTU", "br/sp/birigui", 5).every((u) => u.startsWith("law://br/sp/birigui/")));
   assert.deepEqual(top("zzzzzz inexistente"), []);

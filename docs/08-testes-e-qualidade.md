@@ -20,7 +20,7 @@ Todos ficam em `src/lawmcp.test.ts` e rodam sobre o snapshot real.
 | carrega as jurisdições da demo com o commit de cada fonte | `br/federal`, `br/sp/birigui` e `es` carregados, todas as fontes com commit, mais de 10 mil documentos |
 | ler_norma: artigo, inciso e parágrafo, no Brasil e na Espanha | Leitura de dispositivos e `undefined` para artigo ou inciso inexistente |
 | permalink aponta para o arquivo no commit do manifesto | Permalink = repo + commit do manifest + caminho de origem |
-| buscar_normas: ranking BM25 põe o artigo certo no topo | "iguales ante la ley" → art. 14 da CE; "responsabilidade civil dano moral ato ilícito" → art. 186 do CC; filtro por jurisdição |
+| buscar_normas: ranking BM25 põe o artigo certo no topo | "iguales ante la ley" → art. 14 da CE; "igualdade perante a lei" → art. 5º da CF (artigo longo); "responsabilidade civil dano moral ato ilícito" → art. 186 do CC; filtro por jurisdição |
 | verificar_citacoes: artigos, listas, faixas, incisos e parágrafos | 18 citações com o status esperado (tabela em [06](06-verificador-de-citacoes.md)) |
 | verificar_citacoes: Código Civil é o brasileiro, salvo citação em espanhol | Desambiguação BR × ES |
 | verificar_citacoes: trecho entre aspas diferente do oficial é divergente | "7 dias" ok; "30 dias" divergente |

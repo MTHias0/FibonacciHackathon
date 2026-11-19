@@ -2,14 +2,17 @@
 
 ## Estado
 
-- **Entrega 1 (MCP) implementada:** servidor stdio com as 4 tools P0 (`listar_jurisdicoes`, `buscar_normas`, `ler_norma`, `verificar_citacoes`) sobre 5.212 normas (2.007 br/federal, 654 br/sp/birigui e 2.551 es, contando artigos).
-- Verificado: `npm test` (8 testes, incluindo um ponta a ponta com um cliente MCP real via stdio), `typecheck` e `build`. **Ainda não testado na interface do Claude Desktop, do Cursor nem do OpenBot.**
-- Ideia convergida: **LawMCP**, um servidor MCP para consultar, citar e verificar leis de qualquer jurisdição. Plano completo em `docs/IDEIAS-MCP.md`.
+- **MCP v0.2 implementado** (entregas 1 e 2): 8 tools (`listar_jurisdicoes`, `buscar_normas`, `ler_norma`, `verificar_citacoes`, `historico_norma`, `impacto_da_norma`, `comparar_jurisdicoes`, `adicionar_norma`), resources `law://…` e `lawmcp://sobre`, 4 prompts e instruções do servidor.
+- Base: 15.162 documentos (normas e artigos), sendo 11.956 de br/federal (43 normas: CF, CDC, CLT, ECA, Inquilinato, 17 códigos e 21 leis-chave), 654 de br/sp/birigui e 2.552 de es. Cada um com permalink no commit exato da fonte (`data/snapshot/manifest.json`).
+- Verificado: `npm test` (16 testes, incluindo um ponta a ponta via stdio e o `adicionar_norma` com git), `typecheck`, `build` e `initialize` do servidor compilado. Carga do índice: cerca de 3 s com cache de disco e 9 a 14 s a frio; o stdio conecta antes e as tools esperam a carga. Heap: cerca de 95 MB.
+- **Ainda não testado na interface do Claude Desktop, do Cursor nem do OpenBot.**
+- Roadmap por dev: `docs/ROADMAP.md`.
 
 ## Fatos
 
 - O tema central do hackathon é integração via MCP.
 - O ponto de partida é o `ctresb/leis` (leis em Markdown, com o histórico git como linha do tempo legislativa) e projetos semelhantes.
+- A genealogia vem das notas de alteração das fontes ("Redação dada pela Lei nº …"), não do `git log`: os repositórios de origem não reconstroem versões antigas.
 
 ## Decisões
 
@@ -20,18 +23,28 @@
 - Dados da demo versionados em `data/snapshot/`, porque o clone do ctresb leva cerca de 7 min. `npm run data:fetch` regenera.
 - Demo: BR federal + 1 município + Espanha, com `adicionar_norma`. MCP só local (stdio).
 - **Ordem de entrega: 1) o MCP (tools P0 no Claude Desktop via stdio), 2) extras do MCP, 3) front e pitch.** Detalhes em `docs/IDEIAS-MCP.md` › Ordem de entrega.
-- Prazo: 3h, 3 devs com agentes (MCP, back/dados, infra/front). Divisão em `docs/IDEIAS-MCP.md` §8.
+- Prazo: 3h, 3 devs com agentes (MCP, back/dados, infra/front). Divisão em `docs/IDEIAS-MCP.md` §8 e checklist em `docs/ROADMAP.md`.
+- Upgrade v0.2 pedido pelo João ("revise, otimize, implemente, quero algo único"):
+  - LawCodex/br como 4ª fonte. CDC, CLT e ECA continuam vindo do legislacao-br, que tem âncoras e notas.
+  - Busca BM25.
+  - Permalink por commit.
+  - Normas privadas em git local (`data/local/`, ignorado pelo git do projeto).
+  - O contrato `src/types.ts` mudou junto: `Alteracao`, `permalink`, entradas e saídas das tools novas.
 
 ## Pendências
 
 - Testar no Claude Desktop (config no README) e confirmar se o OpenBot suporta MCP via stdio.
-- Limitações do verificador: pega só o primeiro artigo de listas ("arts. 5º e 7º") e não confere incisos e parágrafos.
+- Limitações conhecidas:
+  - A busca usa radical por truncamento: "igualdade" não acha "iguais".
+  - O verificador não confere alíneas.
+  - Citação de artigo sem norma ("art. 5º" solto) não é verificada.
+  - O ctresb não é dividido em artigos.
 - Critérios de avaliação do hackathon e MCPs ou APIs de patrocinadores.
 - Skill `grillme`, pedida por um colega: origem desconhecida.
 
 ## Próximo passo
 
-1. Plugar no Claude Desktop e rodar as perguntas de teste do README (checkpoint da entrega 1).
-2. Entrega 2: `adicionar_norma`, `historico_norma`, resources `law://` e prompts. Os tipos já estão em `src/types.ts`.
+1. Checkpoint: plugar no Claude Desktop e rodar as perguntas de demo do README.
+2. Entrega 3: front mínimo em `web/` (ponte HTTP → cliente MCP), pitch e ensaio. Ver `docs/ROADMAP.md`.
 
 <!-- Atualizado em 2026-11-19 por Claude (sessão de João Matheus). -->

@@ -6,7 +6,7 @@ Leia `CONTEXTO.md` antes de trabalhar. `CLAUDE.md` é um link para este arquivo,
 
 - Hackathon com tema central **integração via MCP (Model Context Protocol)**. Pense as soluções como servidores e clientes MCP (tools, resources, prompts).
 - As ideias em discussão estão em `docs/IDEIAS-MCP.md`. Só é decisão o que estiver em `CONTEXTO.md` › Decisões.
-- **A primeira entrega é o MCP** (LawMCP com tools P0 via stdio). Front, landing e pitch só depois de ela funcionar no Claude Desktop.
+- **A primeira entrega é o MCP** (LawMCP via stdio, já implementado na v0.2). Front, landing e pitch só depois de ele funcionar no Claude Desktop. O que cada dev faz está em `docs/ROADMAP.md`.
 - O contrato compartilhado fica em `src/types.ts`. Não altere sem combinar com o time.
 
 ## Arquitetura
@@ -15,6 +15,8 @@ Leia `CONTEXTO.md` antes de trabalhar. `CLAUDE.md` é um link para este arquivo,
 - O Node roda `.ts` direto: imports relativos usam a extensão `.ts` (o `tsc` reescreve para `.js` no build).
 - MCP: `@modelcontextprotocol/sdk` e `zod` para os schemas. Tools em `src/server.ts`. No servidor stdio, **nunca escreva no stdout**: logs só com `console.error`.
 - Dados: cada fonte é um `Adaptador` em `src/dados/adaptadores.ts`, registrado em `FONTES`, que converte para `Norma`. O snapshot da demo fica em `data/snapshot/` e `data/cache/` não é versionado.
+- O snapshot mantém os caminhos dos repositórios de origem, e `data/snapshot/manifest.json` (gerado por `npm run data:fetch`, nunca à mão) guarda o commit de cada fonte. Os dois juntos formam o permalink.
+- Normas privadas (`adicionar_norma`) só entram em `law://local/{org}/…`, num repositório git próprio em `data/local/` (ou `LAWMCP_LOCAL`), fora do git do projeto. Nunca escreva em jurisdições oficiais.
 - Testes: `node:test` em `src/**/*.test.ts`. Toda tool nova precisa de um teste.
 - Registre aqui as novas regras permanentes de arquitetura e, em `CONTEXTO.md`, o motivo de cada uma.
 - Implemente o menor sistema completo que cumpra os requisitos confirmados. Reutilize antes de abstrair.

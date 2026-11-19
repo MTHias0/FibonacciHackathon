@@ -15,7 +15,7 @@
 2. **Entrega 2, extras do MCP:** tools **P1** (`adicionar_norma`, `historico_norma`), resources, prompts e testes em outros clientes (Cursor, OpenBot).
 3. **Entrega 3, o resto:** página mínima, chat ou painel básico, pitch e polimento.
 
-> **Status em 2026-11-19:** a entrega 1 está implementada e verificada por testes (incluindo um ponta a ponta via stdio). Falta o checkpoint no Claude Desktop. Como rodar: [README](../README.md).
+> **Status em 2026-11-19:** as entregas 1 e 2 estão implementadas (v0.2: 8 tools, resources, prompts) e verificadas por testes, incluindo um ponta a ponta via stdio. Falta o checkpoint no Claude Desktop. Como rodar: [README](../README.md).
 
 ## 2. Decidido
 
@@ -70,7 +70,7 @@ type Norma = {
 
 Adicionar um país ou município = escrever **um adaptador** (frontmatter da fonte → `Norma`).
 
-## 6. Superfície MCP (proposta)
+## 6. Superfície MCP (implementada na v0.2)
 
 **Tools**
 | Tool | O que faz | Prioridade |
@@ -80,10 +80,13 @@ Adicionar um país ou município = escrever **um adaptador** (frontmatter da fon
 | `ler_norma` | Texto por URI (norma ou artigo), com fonte e vigência | P0 |
 | `verificar_citacoes` | Recebe um texto e marca cada citação como ok, revogada, inexistente ou divergente | P0 (diferencial) |
 | `adicionar_norma` | Salva uma norma nova (Markdown + frontmatter) e cria um commit, para normas próprias de escritórios e empresas | P1 |
-| `historico_norma` | `git log` da norma ou artigo (quem mudou e quando) | P1 |
+| `historico_norma` | Genealogia por dispositivo, a partir das notas de alteração das fontes (quem mudou e como) | P1 |
+| `impacto_da_norma` | Reverso da genealogia: o que uma lei alterou ("Reforma Trabalhista" → 378 dispositivos da CLT) | P1 (diferencial) |
+| `comparar_jurisdicoes` | O mesmo tema em várias jurisdições, lado a lado | P1 |
 
 **Resources:** `law://{jurisdicao}/{id}[/art-N]`
-**Prompts:** `responder_com_citacao` (B2B/advogado) e `explicar_para_cidadao` (B2C, linguagem simples + aviso)
+**Prompts:** `responder_com_citacao` (B2B/advogado), `explicar_para_cidadao` (B2C, linguagem simples + aviso), `revisar_peca` e `comparar_paises`
+**Lei com recibo:** toda resposta leva o permalink do texto no commit exato da fonte (`data/snapshot/manifest.json`).
 
 **Regras:** somente leitura, exceto `adicionar_norma`. Validar a URI (sem path traversal). Limitar o tamanho das respostas. Todo retorno leva `fonte` e o aviso "não substitui o diário oficial nem aconselhamento jurídico".
 
@@ -122,9 +125,10 @@ Checklist do que cada dev faz agora: [ROADMAP.md](ROADMAP.md).
 1. O problema: o assistente sem MCP inventa um artigo de lei.
 2. Plugamos o LawMCP e repetimos a pergunta: a resposta vem com o artigo, a fonte e a vigência.
 3. Uma mesma pergunta em **três jurisdições** (federal, Birigui e Espanha) prova que funciona para qualquer lugar.
-4. `verificar_citacoes` pega uma citação falsa num parecer gerado por IA.
-5. `adicionar_norma`: o escritório adiciona uma norma interna e ela já aparece na busca, com commit.
-6. Fechamento: "plugue em qualquer agente". Mostrar o mesmo servidor no Cursor ou no OpenBot.
+4. `verificar_citacoes` pega uma citação falsa num parecer gerado por IA (até o inciso: "art. 7º, XCIX, da CF" não existe; a CF vai até o inciso XXXIV).
+5. `impacto_da_norma`: "o que a Reforma Trabalhista mudou?" → 378 dispositivos da CLT, cada um com permalink.
+6. `adicionar_norma`: o escritório adiciona uma norma interna e ela já aparece na busca, com commit.
+7. Fechamento: "plugue em qualquer agente". Mostrar o mesmo servidor no Cursor ou no OpenBot.
 
 ## 10. Em aberto
 

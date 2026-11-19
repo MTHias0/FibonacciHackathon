@@ -1,6 +1,6 @@
 {
   "name": "fibonacci-hackathon",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "LawMCP: servidor MCP para consultar, citar e verificar leis de qualquer jurisdição.",
   "type": "module",

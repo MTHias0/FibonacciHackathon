@@ -1,0 +1,22 @@
+{
+  "br-federal-lawcodex": {
+    "repo": "LawCodex/br",
+    "commit": "e2a0e14bfc5cddf9a88b2aa05c66536cdb547aa1",
+    "atualizado_em": "2026-11-19"
+  },
+  "es": {
+    "repo": "legalize-dev/legalize-es",
+    "commit": "b401f7b7a3fdd3f623c90376c6e30d3eb754c0bc",
+    "atualizado_em": "2026-11-19"
+  },
+  "br-federal": {
+    "repo": "Evaldoes/legislacao-br",
+    "commit": "9dbcbd37dcf2cdd76479bea53eb0e41f52590cf1",
+    "atualizado_em": "2026-11-19"
+  },
+  "br-sp-birigui": {
+    "repo": "ctresb/leis",
+    "commit": "c9f21b4ab11aa0d7ca6fe861d75028e94219c2d6",
+    "atualizado_em": "2026-11-19"
+  }
+}

@@ -1,19 +1,14 @@
 # Roadmap por dev
 
-O que cada um faz agora, enquanto o MCP v2 está em implementação, e o que faz depois que ele chegar na `main`.
+O que cada dev faz, antes e depois do MCP v2 (que já está na `main`).
 A divisão segue a §8 de [IDEIAS-MCP.md](IDEIAS-MCP.md). Ao terminar um item, marque `[x]` aqui e anote em [CONTEXTO.md](../CONTEXTO.md).
 
-## Regra de ouro enquanto o MCP v2 não sobe
+## O MCP v2 chegou na main
 
-Estes arquivos estão sendo reescritos agora. **Não edite até o push do MCP v2**, para evitar conflito:
+Dê `git pull`, rode `npm ci && npm test` e siga a parte "Depois do MCP v2" do seu bloco. `src/` está liberado, mas `src/types.ts` (o contrato) continua sendo combinado com o time antes de mudar.
+Trabalho novo segue em pastas próprias: `web/` (front) e `docs/` (pitch, casos de teste, pesquisa).
 
-- `src/**` (inclusive `src/types.ts`, o contrato)
-- `data/snapshot/**`
-- `package.json`, `README.md`, `CONTEXTO.md`, `AGENTS.md`
-
-Trabalho novo vai em pastas próprias: `web/` (front) e `docs/` (pitch, casos de teste, pesquisa).
-
-## O que está chegando no MCP v2 (em implementação, ainda não está na main)
+## O que o MCP v2 trouxe
 
 | Tool | Para quê |
 |---|---|
@@ -26,8 +21,8 @@ Trabalho novo vai em pastas próprias: `web/` (front) e `docs/` (pitch, casos de
 | `comparar_jurisdicoes` | O mesmo tema no Brasil e na Espanha, lado a lado |
 | `adicionar_norma` | Norma privada de escritório ou empresa, versionada em git local (B2B) |
 
-Também chegam resources `law://…` e prompts prontos (`responder_com_citacao`, `explicar_para_cidadao`, `revisar_peca`, `comparar_paises`). Toda resposta passa a trazer **permalink por commit**: a "lei com recibo".
-A base passa de 5 normas federais para cerca de 40: CF, códigos (CC, CPC, CP, CPP, CTN, CTB…) e leis-chave (LGPD, Marco Civil, Licitações, Maria da Penha, Reforma Trabalhista…).
+Também vieram resources `law://…` e prompts prontos (`responder_com_citacao`, `explicar_para_cidadao`, `revisar_peca`, `comparar_paises`). Toda resposta traz **permalink por commit**: a "lei com recibo".
+A base passou de 5 para 43 normas federais: CF, códigos (CC, CPC, CP, CPP, CTN, CTB…) e leis-chave (LGPD, Marco Civil, Licitações, Maria da Penha, Reforma Trabalhista…).
 
 ---
 
